@@ -28,4 +28,5 @@ count = (() ->
         fizz = cycle ["", "", "fizz"]
         buzz = cycle ["", "", "", "", "buzz"]
         () ->
-            fizz() + buzz() or nextint().toString()
+            n = nextint().toString()
+            fizz() + buzz() or n
