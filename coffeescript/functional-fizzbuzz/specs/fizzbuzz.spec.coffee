@@ -7,3 +7,5 @@ describe 'Fizzbuzz sequence', ->
         expect(next()).to.equal '2'
     it 'should have fizz as its first third element', ->
         expect(nth(next, 3)).to.equal 'fizz'
+    it 'should have buzz as its first fifth element', ->
+        expect(nth(next, 5)).to.equal 'buzz'

@@ -10,7 +10,7 @@
 @cycle = (array) ->
     i = -1
     () ->
-        if i < (array.length - 1) then i++ else 0
+        i = if i < (array.length - 1) then i+1 else 0
         array[i]
 
 ## fizzbuzz
@@ -26,5 +26,6 @@ count = (() ->
     init: () ->
         nextint = count()
         fizz = cycle ["", "", "fizz"]
+        buzz = cycle ["", "", "", "", "buzz"]
         () ->
-            fizz() or nextint().toString()
+            fizz() + buzz() or nextint().toString()
