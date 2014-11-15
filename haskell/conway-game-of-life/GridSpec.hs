@@ -18,3 +18,6 @@ main = hspec $ do
             it "should be able to be converted back to the list of lists" $do
                 let grid = fromRowLists [[1, 2], [2, 4]]
                 listRows grid `shouldBe` [[1, 2], [2, 4]]
+        context "which is empty, when I inner-zip a grid that is not empty onto it" $do
+            it "should produce an empty grid" $do
+                innerZip empty (fromRowLists [[2]]) `shouldBe` empty
