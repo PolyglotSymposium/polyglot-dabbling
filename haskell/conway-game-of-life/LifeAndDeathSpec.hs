@@ -17,3 +17,7 @@ main = hspec $ do
     describe "A cell which was dead in the previous generation" $do
         it "should still be dead if it only had two living neighbors" $do
             nextStateOf DeadCell 2 `shouldBe` DeadCell
+        it "should come to life if it had three living neighbors" $do
+            nextStateOf DeadCell 3 `shouldBe` LivingCell
+        it "should still be dead if it had four living neighbors" $do
+            nextStateOf DeadCell 4 `shouldBe` DeadCell
