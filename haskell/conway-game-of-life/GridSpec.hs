@@ -8,12 +8,16 @@ main = hspec $ do
     describe "Given a two-dimensional grid, singly-linked in each direction" $do
         context "which is empty, when I push a list of three elements onto its side" $do
             let grid = pushAside empty [1, 2, 3]
+            let row2 = below grid
+            let row3 = below row2
             it "should have one column" $do
                 leftAsList grid `shouldBe` [1, 2, 3]
             it "should have a top row equal to the first element of the list" $do
                 topAsList grid `shouldBe` [1]
             it "should have a middle row equal to the second element of the list" $do
-                topAsList (below grid) `shouldBe` [2]
+                topAsList row2 `shouldBe` [2]
+            it "should have a bottom row equal to the third element of the list" $do
+                topAsList row3 `shouldBe` [3]
         context "which is empty, when I push a list onto its top" $do
             it "should have one column" $do
                 let grid = pushDown empty [1, 2, 3]
