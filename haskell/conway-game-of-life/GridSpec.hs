@@ -6,12 +6,14 @@ import Grid
 main :: IO()
 main = hspec $ do
     describe "Given a two-dimensional grid, singly-linked in each direction" $do
-        context "which is empty, when I push a list onto its side" $do
+        context "which is empty, when I push a list of three elements onto its side" $do
             let grid = pushAside empty [1, 2, 3]
             it "should have one column" $do
-                listRows grid `shouldBe` [[1], [2], [3]]
+                leftAsList grid `shouldBe` [1, 2, 3]
             it "should have a top row equal to the first element of the list" $do
                 topAsList grid `shouldBe` [1]
+            --it "should have a middle row equal to the second element of the list" $do
+            --    topAsList (topAsList grid) `shouldBe` [2]
         context "which is empty, when I push a list onto its top" $do
             it "should have one column" $do
                 let grid = pushDown empty [1, 2, 3]

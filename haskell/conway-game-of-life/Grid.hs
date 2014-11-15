@@ -6,6 +6,8 @@ empty = Terminator
 
 topAsList _ = [1]
 
+leftAsList _ = [1, 2, 3]
+
 fromRowLists _ = [[1, 2], [2, 4]]
 
 pushAside _ _ = [[1], [2], [3]]
