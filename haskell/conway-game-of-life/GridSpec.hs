@@ -8,5 +8,9 @@ main = hspec $ do
     describe "Given a two-dimensional grid, singly-linked in each direction" $do
         context "which is empty, when I push a list onto its side" $do
             it "should have one column" $do
-                let oneColumn = pushAside empty [1, 2, 3]
-                listRows oneColumn `shouldBe` [[1], [2], [3]]
+                let grid = pushAside empty [1, 2, 3]
+                listRows grid `shouldBe` [[1], [2], [3]]
+        context "which is empty, when I push a list onto its top" $do
+            it "should have one column" $do
+                let grid = pushDown empty [1, 2, 3]
+                listRows grid `shouldBe` [1, 2, 3]
