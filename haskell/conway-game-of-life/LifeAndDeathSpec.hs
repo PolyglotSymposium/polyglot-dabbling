@@ -12,3 +12,5 @@ main = hspec $ do
             nextStateOf LivingCell 2 `shouldBe` LivingCell
         it "should still be living if it had three living neighbors" $do
             nextStateOf LivingCell 3 `shouldBe` LivingCell
+        it "should be dead now if it had four living neighborss" $do
+            nextStateOf LivingCell 4 `shouldBe` DeadCell
