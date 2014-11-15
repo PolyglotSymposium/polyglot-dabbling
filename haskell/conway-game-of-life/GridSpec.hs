@@ -13,8 +13,7 @@ main = hspec $ do
             it "should have a top row equal to the first element of the list" $do
                 topAsList grid `shouldBe` [1]
             it "should have a middle row equal to the second element of the list" $do
-                pending
-                --topAsList (topAsList grid) `shouldBe` [2]
+                topAsList (below grid) `shouldBe` [2]
         context "which is empty, when I push a list onto its top" $do
             it "should have one column" $do
                 let grid = pushDown empty [1, 2, 3]
