@@ -14,3 +14,7 @@ main = hspec $ do
             it "should have one column" $do
                 let grid = pushDown empty [1, 2, 3]
                 listRows grid `shouldBe` [1, 2, 3]
+        context "which has been initialized from a list of lists" $do
+            it "should be able to be converted back to the list of lists" $do
+                let grid = fromRowLists [[1, 2], [2, 4]]
+                listRows grid `shouldBe` [[1, 2], [2, 4]]
