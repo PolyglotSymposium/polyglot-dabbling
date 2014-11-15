@@ -12,10 +12,18 @@ topAsList node = valueOf node : topAsList (right node)
 leftAsList _ = [1, 2, 3]
 
 rowFromList [] = Terminator
-rowFromList row = Node { valueOf = head row, right = rowFromList (tail row), below = empty }
+rowFromList row = Node {
+    valueOf = head row,
+    right = rowFromList (tail row),
+    below = empty
+}
 
 --columnFromList [] = Terminator
-columnFromList column = Node { valueOf = head column, right = empty, below = columnFromList (tail column) }
+columnFromList column = Node {
+    valueOf = head column,
+    right = empty,
+    below = columnFromList (tail column)
+}
 
 fromRowLists _ = [[1, 2], [2, 4]]
 
