@@ -6,11 +6,9 @@ data LinkedList2D a = Terminator
 
 empty = Terminator
 
-topAsList :: LinkedList2D a -> [a]
 topAsList Terminator = []
 topAsList node = valueOf node : topAsList (right node)
 
-rowFromList :: [a] -> LinkedList2D a
 rowFromList [] = Terminator
 rowFromList row = Node {
     valueOf = head row,
@@ -25,14 +23,11 @@ columnFromList column = Node {
     below = columnFromList (tail column)
 }
 
-fromRowLists :: [[a]] -> LinkedList2D a
 fromRowLists [] = Terminator
 fromRowLists rows = pushDown (fromRowLists (tail rows)) (head rows)
 
-pushAside :: LinkedList2D a -> [a] -> LinkedList2D a
 pushAside _ newColumn = columnFromList newColumn
 
-pushDown :: LinkedList2D a -> [a] -> LinkedList2D a
 pushDown Terminator [] = Terminator
 pushDown Terminator row = rowFromList row
 pushDown node rowAsList = Node {
@@ -46,6 +41,5 @@ innerZipWith _ Terminator _ = empty
 innerZipWith _ _ Terminator = empty
 innerZipWith _ _ _ = empty
 
-listRows :: LinkedList2D a -> [[a]]
-listRows node@Node { below = Terminator } = [topAsList node]
+listRows Terminator = []
 listRows node = topAsList node : listRows (below node)
