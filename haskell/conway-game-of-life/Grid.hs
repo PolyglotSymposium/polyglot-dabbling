@@ -6,11 +6,11 @@ data LinkedList2D a = Terminator
 
 empty = Terminator
 
+topAsList :: LinkedList2D a -> [a]
 topAsList Terminator = []
 topAsList node = valueOf node : topAsList (right node)
 
-leftAsList _ = [1, 2, 3]
-
+rowFromList :: [a] -> LinkedList2D a
 rowFromList [] = Terminator
 rowFromList row = Node {
     valueOf = head row,
@@ -18,19 +18,34 @@ rowFromList row = Node {
     below = empty
 }
 
---columnFromList [] = Terminator
+columnFromList [] = Terminator
 columnFromList column = Node {
     valueOf = head column,
     right = empty,
     below = columnFromList (tail column)
 }
 
-fromRowLists _ = [[1, 2], [2, 4]]
+fromRowLists :: [[a]] -> LinkedList2D a
+fromRowLists [] = Terminator
+fromRowLists rows = pushDown (fromRowLists (tail rows)) (head rows)
 
+pushAside :: LinkedList2D a -> [a] -> LinkedList2D a
 pushAside _ newColumn = columnFromList newColumn
 
-pushDown _ _ = [1, 2, 3]
+pushDown :: LinkedList2D a -> [a] -> LinkedList2D a
+pushDown Terminator [] = Terminator
+pushDown Terminator row = rowFromList row
+pushDown node rowAsList = Node {
+    valueOf = head rowAsList,
+    right = pushDown (right node) (tail rowAsList),
+    below = node
+}
 
+innerZipWith :: (a -> a -> b) -> LinkedList2D a -> LinkedList2D a -> LinkedList2D b
+innerZipWith _ Terminator _ = empty
+innerZipWith _ _ Terminator = empty
 innerZipWith _ _ _ = empty
 
-listRows grid = grid
+listRows :: LinkedList2D a -> [[a]]
+listRows node@Node { below = Terminator } = [topAsList node]
+listRows node = topAsList node : listRows (below node)

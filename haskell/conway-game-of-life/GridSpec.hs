@@ -10,8 +10,6 @@ main = hspec $ do
             let grid = pushAside empty [1, 2, 3]
             let row2 = below grid
             let row3 = below row2
-            it "should have one column" $do
-                leftAsList grid `shouldBe` [1, 2, 3]
             it "should have a top row equal to the first element of the list" $do
                 topAsList grid `shouldBe` [1]
             it "should have a middle row equal to the second element of the list" $do
@@ -21,20 +19,21 @@ main = hspec $ do
         context "which is empty, when I push a list onto its top" $do
             it "should have one column" $do
                 let grid = pushDown empty [1, 2, 3]
-                listRows grid `shouldBe` [1, 2, 3]
+                listRows grid `shouldBe` [[1, 2, 3]]
         context "which has been initialized to have on row from a list" $do
             it "should be able to be converted back to a list" $do
                 let grid = rowFromList [3, 1, 4]
                 topAsList grid `shouldBe` [3, 1, 4]
         context "which has been initialized from a list of lists" $do
             it "should be able to be converted back to the list of lists" $do
-                pending
-                --let grid = fromRowLists [[1, 2], [2, 4]]
-                --listRows grid `shouldBe` [[1, 2], [2, 4]]
+                let grid = fromRowLists [[1, 2], [2, 4]]
+                listRows grid `shouldBe` [[1, 2], [2, 4]]
         context "which is empty, when I inner-zip a grid that is not empty onto it" $do
             it "should produce an empty grid" $do
-                pending
-                --innerZipWith (+) empty (fromRowLists [[2]]) `shouldBe` empty
+                let grid1 = empty
+                let grid2 = fromRowLists [["foo"]]
+                innerZipWith (++) grid1 grid2 `shouldBe` empty
+                innerZipWith (++) grid2 grid1 `shouldBe` empty
         context "which is not empty, when I inner-zip a grid that is the same size onto it" $do
             it "should produce a combination of the two grids" $do
                 pending
