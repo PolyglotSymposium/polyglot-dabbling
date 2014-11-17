@@ -4,11 +4,14 @@ data Modifier = To | NotTo | ToNot
 data Matcher a f = Be a | Fulfill f
 data Reality = Fail | Success deriving (Show, Eq)
 
-expect val adv matcher = [case adv of
-  To -> if successfulMatch matcher val then Success else Fail
-  _  -> if successfulMatch matcher val then Fail else Success]
+expect val adv matcher = (case (adv, matched) of
+  (To, True) -> Success
+  (To, False) -> Fail
+  (_, False) -> Success
+  _ -> Fail):[]
+  where matched = successfulMatch matcher val
 
-also e1 e2 = e1 ++ e2
+also = (++)
 
 successfulMatch matcher = case matcher of
   (Be a) -> (== a)
