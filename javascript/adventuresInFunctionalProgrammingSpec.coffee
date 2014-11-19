@@ -11,3 +11,7 @@ describe 'curry', ->
   describe 'given a function that takes two arguments', ->
     it 'returns a partial add function', ->
       expect(curry(add)(35)(7)).toBe 42
+
+describe 'uncurry', ->
+  it 'undoes curry', ->
+      expect(uncurry(curry(add))(35, 7)).toBe 42

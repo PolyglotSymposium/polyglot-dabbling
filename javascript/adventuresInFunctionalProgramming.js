@@ -11,3 +11,9 @@ var curry = function (f) {
         };
     };
 };
+
+var uncurry = function (f) {
+    return function (x, y) {
+        return f(x)(y);
+    };
+};
