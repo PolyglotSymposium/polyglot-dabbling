@@ -13,3 +13,9 @@
 
 (deftest ruby-translate-of-define-2
   (is (= "the_answer = 42" (translate :ruby (metalang (define the_answer 42))))))
+
+(deftest ruby-translate-of-define-3
+  (is (= "the_answer = 99" (translate :ruby (metalang (define the_answer 99))))))
+
+(deftest ruby-translate-of-define-4
+  (is (= "a = -> {}" (translate :ruby (metalang (define a (anon [] ())))))))

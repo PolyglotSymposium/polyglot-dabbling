@@ -4,7 +4,9 @@
   `(quote ~code))
 
 (defn translate [_ code]
-  (let [f (first code)] 
-    (cond
-      (= 'anon f) "-> {}"
-      (= 'define f) (str (name (nth code 1)) " = 42"))))
+  (if ((complement list?) code)
+    code
+    (let [f (first code)] 
+      (cond
+        (= 'anon f) "-> {}"
+        (= 'define f) (str (nth code 1) " = " (translate :ruby (nth code 2)))))))
