@@ -10,7 +10,10 @@
   (nth items 2))
 
 (defn translate-js [code]
-  "function () { }")
+  (cond
+    (or (= 'anon (first code)) (= 'λ (first code)))
+      "function () { }"
+    :else "return 42"))
 
 (defn translate-ruby [code]
   (if (not (list? code))

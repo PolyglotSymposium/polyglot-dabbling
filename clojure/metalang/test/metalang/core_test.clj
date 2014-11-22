@@ -23,8 +23,11 @@
 (deftest ruby-translate-of-metalang-λ-3
   (is (= "->(a, b){}" (translate :ruby (metalang (λ [a b] ()))))))
 
-(deftest ruby-translate-of-return
+(deftest ruby-translate-of-return-is-noop
   (is (= "42" (translate :ruby (metalang (return 42))))))
+
+(deftest javascript-translate-of-return
+  (is (= "return 42" (translate :javascript (metalang (return 42))))))
 
 (deftest ruby-translate-of-define-returns-assignment
   (is (= "answer = 42" (translate :ruby (metalang (define answer 42))))))
