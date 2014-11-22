@@ -11,6 +11,9 @@
 (deftest javascript-translate-of-metalang-anon-returns-function
   (is (= "function () { }" (translate :javascript (metalang (anon [] ()))))))
 
+(deftest javascript-translate-of-metalang-λ-returns-function
+  (is (= "function () { }" (translate :javascript (metalang (λ [] ()))))))
+
 (deftest ruby-translate-of-metalang-λ-returns-a-stabby-proc
   (is (= "->{}" (translate :ruby (metalang (λ [] ()))))))
 
@@ -19,6 +22,9 @@
 
 (deftest ruby-translate-of-metalang-λ-3
   (is (= "->(a, b){}" (translate :ruby (metalang (λ [a b] ()))))))
+
+(deftest ruby-translate-of-return
+  (is (= "42" (translate :ruby (metalang (return 42))))))
 
 (deftest ruby-translate-of-define-returns-assignment
   (is (= "answer = 42" (translate :ruby (metalang (define answer 42))))))

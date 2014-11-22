@@ -24,6 +24,8 @@
                "{}")
         (= 'define f)
           (str (second code) " = " (translate-ruby (third code)))
+        (= 'return f)
+          ((comp str translate-ruby second) code)
         (= 'call f)
           (str "(" (translate-ruby (second code)) ").(" (comma-sep (third code)) ")")))))
 
