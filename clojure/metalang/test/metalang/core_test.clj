@@ -8,6 +8,9 @@
 (deftest ruby-translate-of-metalang-anon-returns-a-stabby-proc
   (is (= "->{}" (translate :ruby (metalang (anon [] ()))))))
 
+(deftest javascript-translate-of-metalang-anon-returns-function
+  (is (= "function () { }" (translate :javascript (metalang (anon [] ()))))))
+
 (deftest ruby-translate-of-metalang-λ-returns-a-stabby-proc
   (is (= "->{}" (translate :ruby (metalang (λ [] ()))))))
 

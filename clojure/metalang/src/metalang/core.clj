@@ -6,6 +6,12 @@
 (defn comma-sep [values]
   (clojure.string/join ", " values))
 
+(defn third [items]
+  (nth items 2))
+
+(defn translate-js [code]
+  "function () { }")
+
 (defn translate-ruby [code]
   (if (not (list? code))
     code
@@ -13,15 +19,16 @@
       (cond
         (or (= 'anon f) (= 'λ f))
           (str "->"
-               (let [params (nth code 1)]
+               (let [params (second code)]
                  (if (empty? params) "" (str "(" (comma-sep params) ")")))
                "{}")
         (= 'define f)
-          (str (nth code 1) " = " (translate-ruby (nth code 2)))
+          (str (second code) " = " (translate-ruby (third code)))
         (= 'call f)
-          (str "(" (translate-ruby (nth code 1)) ").(" (comma-sep (nth code 2)) ")")))))
+          (str "(" (translate-ruby (second code)) ").(" (comma-sep (third code)) ")")))))
 
-(def translator-of { :ruby translate-ruby })
+(def translator-of {:ruby translate-ruby
+                    :javascript translate-js})
 
 (defn translate [lang code]
   ((translator-of lang) code))
