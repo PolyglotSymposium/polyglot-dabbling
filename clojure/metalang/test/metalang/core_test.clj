@@ -11,11 +11,11 @@
 (deftest javascript-translate-of-metalang-anon-returns-function
   (is (= "function () {  }" (translate :javascript (metalang (anon [] ()))))))
 
-(deftest javascript-translate-of-metalang-λ-returns-function
-  (is (= "function () {  }" (translate :javascript (metalang (λ [] ()))))))
-
 (deftest ruby-translate-of-metalang-λ-returns-a-stabby-proc
   (is (= "->{  }" (translate :ruby (metalang (λ [] ()))))))
+
+(deftest javascript-translate-of-metalang-λ-returns-function
+  (is (= "function () {  }" (translate :javascript (metalang (λ [] ()))))))
 
 (deftest ruby-translate-of-metalang-λ-2
   (is (= "->(a){  }" (translate :ruby (metalang (λ [a] ()))))))
@@ -86,3 +86,15 @@
 (deftest ruby-interesting-2
   (is (= "->{ a = 42\na\n }"
          (translate :ruby (metalang (λ [] [(define a 42) (return a)]))))))
+
+(deftest ruby-+
+  (is (= "(a + b)" (translate :ruby (metalang (+ a b))))))
+
+(deftest ruby-+-2
+  (is (= "(b + (c + d))" (translate :ruby (metalang (+ b (+ c d)))))))
+
+(deftest js-+
+  (is (= "(a + b)" (translate :javascript (metalang (+ a b))))))
+
+(deftest js-+-2
+  (is (= "(b + (c + d))" (translate :javascript (metalang (+ b (+ c d)))))))

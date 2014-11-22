@@ -29,6 +29,8 @@
           second #(second code)
           third #(third code)]
       (cond
+        (= '+ first)
+          (str "(" (translate-js (second)) " + " (translate-js (third)) ")")
         (anon? first)
           (str "function (" (comma-sep (second)) ") { " (translate-js (third)) " }")
         (return? first)
@@ -47,6 +49,8 @@
           second #(second code)
           third #(third code)] 
       (cond
+        (= '+ first)
+          (str "(" (translate-ruby (second)) " + " (translate-ruby (third)) ")")
         (anon? first)
           (str "->"
                (let [params (second)]
