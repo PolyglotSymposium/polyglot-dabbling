@@ -27,7 +27,7 @@
           third #(third code)]
       (cond
         (anon? first)
-          (str "function (" (comma-sep (second)) ") { }")
+          (str "function (" (comma-sep (second)) ") { " (translate-js (third)) " }")
         (return? first)
           (str "return " (translate-js (second)))
         (call? first)

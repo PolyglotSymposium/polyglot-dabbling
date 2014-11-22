@@ -9,10 +9,10 @@
   (is (= "->{ }" (translate :ruby (metalang (anon [] ()))))))
 
 (deftest javascript-translate-of-metalang-anon-returns-function
-  (is (= "function () { }" (translate :javascript (metalang (anon [] ()))))))
+  (is (= "function () {  }" (translate :javascript (metalang (anon [] ()))))))
 
 (deftest javascript-translate-of-metalang-λ-returns-function
-  (is (= "function () { }" (translate :javascript (metalang (λ [] ()))))))
+  (is (= "function () {  }" (translate :javascript (metalang (λ [] ()))))))
 
 (deftest ruby-translate-of-metalang-λ-returns-a-stabby-proc
   (is (= "->{ }" (translate :ruby (metalang (λ [] ()))))))
@@ -21,13 +21,13 @@
   (is (= "->(a){ }" (translate :ruby (metalang (λ [a] ()))))))
 
 (deftest javascript-translate-of-metalang-λ-2
-  (is (= "function (a) { }" (translate :javascript (metalang (λ [a] ()))))))
+  (is (= "function (a) {  }" (translate :javascript (metalang (λ [a] ()))))))
 
 (deftest ruby-translate-of-metalang-λ-3
   (is (= "->(a, b){ }" (translate :ruby (metalang (λ [a b] ()))))))
 
 (deftest javascript-translate-of-metalang-λ-3
-  (is (= "function (a, b) { }" (translate :javascript (metalang (λ [a b] ()))))))
+  (is (= "function (a, b) {  }" (translate :javascript (metalang (λ [a b] ()))))))
 
 (deftest ruby-translate-of-return-is-noop
   (is (= "42" (translate :ruby (metalang (return 42))))))
@@ -60,17 +60,21 @@
   (is (= "(->{ }).()" (translate :ruby (metalang (call (anon [] ()) []))))))
 
 (deftest javascript-call-1
-  (is (= "(function () { })()" (translate :javascript (metalang (call (anon [] ()) []))))))
+  (is (= "(function () {  })()" (translate :javascript (metalang (call (anon [] ()) []))))))
 
 (deftest ruby-call-2
   (is (= "(->{ }).(a)" (translate :ruby (metalang (call (anon [] ()) [a]))))))
 
 (deftest javascript-call-2
-  (is (= "(function () { })(a, b)" (translate :javascript (metalang (call (anon [] ()) [a b]))))))
+  (is (= "(function () {  })(a, b)" (translate :javascript (metalang (call (anon [] ()) [a b]))))))
 
 (deftest ruby-call-3
   (is (= "(->{ }).(a, b)" (translate :ruby (metalang (call (anon [] ()) [a b]))))))
 
 (deftest js-interesting
-  (is (= "var a = function () { };\nvar b = 42;\n"
+  (is (= "var a = function () {  };\nvar b = 42;\n"
          (translate :javascript (metalang [(define a (λ [] ())) (define b 42)])))))
+
+(deftest js-interesting-2
+  (is (= "function () { var a = 42;\nreturn a;\n }"
+         (translate :javascript (metalang (λ [] [(define a 42) (return a)]))))))
