@@ -19,3 +19,6 @@
 
 (deftest ruby-translate-of-define-4
   (is (= "a = -> {}" (translate :ruby (metalang (define a (anon [] ())))))))
+
+(deftest ruby-call
+  (is (= "(-> {}).()" (translate :ruby (metalang (call (anon [] ()) []))))))

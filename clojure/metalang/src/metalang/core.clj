@@ -8,5 +8,9 @@
     code
     (let [f (first code)] 
       (cond
-        (= 'anon f) "-> {}"
-        (= 'define f) (str (nth code 1) " = " (translate :ruby (nth code 2)))))))
+        (= 'anon f)
+          "-> {}"
+        (= 'define f)
+          (str (nth code 1) " = " (translate :ruby (nth code 2)))
+        (= 'call f)
+          (str "(" (translate :ruby (nth code 1)) ").()")))))
