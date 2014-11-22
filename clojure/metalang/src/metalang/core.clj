@@ -6,6 +6,9 @@
 (defn comma-sep [values]
   (clojure.string/join ", " values))
 
+(defn semi-nl-sep [values]
+  (clojure.string/join ";\n" values))
+
 (defn third [items]
   (nth items 2))
 
@@ -16,17 +19,21 @@
 
 (defn translate-js [code]
   (if (not (list? code))
-    code
+    (if (vector? code)
+      (str (semi-nl-sep (map translate-js code)) ";\n")
+      code)
     (let [first (first code)
           second #(second code)
           third #(third code)]
       (cond
         (anon? first)
-          "function () { }"
+          (str "function (" (comma-sep (second)) ") { }")
         (return? first)
           (str "return " (translate-js (second)))
+        (call? first)
+          (str "(" (translate-js (second)) ")(" (comma-sep (third)) ")")
         (define? first)
-          (str "var answer = " (translate-js (third)))))))
+          (str "var " (second) " = " (translate-js (third)))))))
 
 (defn translate-ruby [code]
   (if (not (list? code))
@@ -39,7 +46,7 @@
           (str "->"
                (let [params (second)]
                  (if (empty? params) "" (str "(" (comma-sep params) ")")))
-               "{}")
+               "{ }")
         (define? first)
           (str (second) " = " (translate-ruby (third)))
         (return? first)
