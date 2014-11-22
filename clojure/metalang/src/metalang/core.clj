@@ -9,6 +9,9 @@
 (defn semi-nl-sep [values]
   (clojure.string/join ";\n" values))
 
+(defn nl-sep [values]
+  (clojure.string/join "\n" values))
+
 (defn third [items]
   (nth items 2))
 
@@ -37,7 +40,9 @@
 
 (defn translate-ruby [code]
   (if (not (list? code))
-    code
+    (if (vector? code)
+      (str (nl-sep (map translate-ruby code)) "\n")
+      code)
     (let [first (first code)
           second #(second code)
           third #(third code)] 
@@ -46,7 +51,7 @@
           (str "->"
                (let [params (second)]
                  (if (empty? params) "" (str "(" (comma-sep params) ")")))
-               "{ }")
+               "{ " (translate-ruby (third)) " }")
         (define? first)
           (str (second) " = " (translate-ruby (third)))
         (return? first)
