@@ -15,29 +15,37 @@
 (def call? #(= 'call %))
 
 (defn translate-js [code]
-  (let [f (first code)]
-    (cond
-      (anon? f)
-      "function () { }"
-      (return? f)
-      "return 42")))
+  (if (not (list? code))
+    code
+    (let [first (first code)
+          second #(second code)
+          third #(third code)]
+      (cond
+        (anon? first)
+          "function () { }"
+        (return? first)
+          (str "return " (translate-js (second)))
+        (define? first)
+          (str "var answer = " (translate-js (third)))))))
 
 (defn translate-ruby [code]
   (if (not (list? code))
     code
-    (let [f (first code)] 
+    (let [first (first code)
+          second #(second code)
+          third #(third code)] 
       (cond
-        (anon? f)
+        (anon? first)
           (str "->"
-               (let [params (second code)]
+               (let [params (second)]
                  (if (empty? params) "" (str "(" (comma-sep params) ")")))
                "{}")
-        (define? f)
-          (str (second code) " = " (translate-ruby (third code)))
-        (return? f)
-          ((comp str translate-ruby second) code)
-        (call? f)
-          (str "(" (translate-ruby (second code)) ").(" (comma-sep (third code)) ")")))))
+        (define? first)
+          (str (second) " = " (translate-ruby (third)))
+        (return? first)
+          ((comp str translate-ruby second))
+        (call? first)
+          (str "(" (translate-ruby (second)) ").(" (comma-sep (third)) ")")))))
 
 (def translator-of {:ruby translate-ruby
                     :javascript translate-js})

@@ -29,6 +29,15 @@
 (deftest javascript-translate-of-return
   (is (= "return 42" (translate :javascript (metalang (return 42))))))
 
+(deftest javascript-translate-of-return-2
+  (is (= "return 99" (translate :javascript (metalang (return 99))))))
+
+(deftest javascript-translate-of-define
+  (is (= "var answer = 42" (translate :javascript (metalang (define answer 42))))))
+
+(deftest javascript-translate-of-define-2
+  (is (= "var answer = 99" (translate :javascript (metalang (define answer 99))))))
+
 (deftest ruby-translate-of-define-returns-assignment
   (is (= "answer = 42" (translate :ruby (metalang (define answer 42))))))
 
