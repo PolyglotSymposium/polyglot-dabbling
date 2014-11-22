@@ -87,14 +87,17 @@
   (is (= "->{ a = 42\na\n }"
          (translate :ruby (metalang (λ [] [(define a 42) (return a)]))))))
 
-(deftest ruby-+
-  (is (= "(a + b)" (translate :ruby (metalang (+ a b))))))
-
-(deftest ruby-+-2
-  (is (= "(b + (c + d))" (translate :ruby (metalang (+ b (+ c d)))))))
-
-(deftest js-+
-  (is (= "(a + b)" (translate :javascript (metalang (+ a b))))))
-
-(deftest js-+-2
-  (is (= "(b + (c + d))" (translate :javascript (metalang (+ b (+ c d)))))))
+(deftest many-simple-operators
+  (are [exp lang code] (is (= exp (translate lang (metalang code))))
+       "(a + b)" :ruby (+ a b)
+       "(b + (c + d))" :ruby (+ b (+ c d))
+       "(a + b)" :javascript (+ a b)
+       "(b + (c + d))" :javascript (+ b (+ c d))
+       "(a - b)" :ruby (- a b)
+       "(a - b)" :javascript (- a b)
+       "(a / b)" :ruby (/ a b)
+       "(a / b)" :javascript (/ a b)
+       "(a * b)" :ruby (* a b)
+       "(a * b)" :javascript (* a b)
+       "(a % b)" :ruby (% a b)
+       "(a % b)" :javascript (% a b)))

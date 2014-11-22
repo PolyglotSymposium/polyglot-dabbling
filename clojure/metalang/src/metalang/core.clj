@@ -15,6 +15,9 @@
 (defn third [items]
   (nth items 2))
 
+(defn infix? [kwd]
+  (contains? #{'+ '- '/ '* '%} kwd))
+
 (def anon? #(or (= 'anon %) (= 'λ %)))
 (def define? #(= 'define %))
 (def return? #(= 'return %))
@@ -29,8 +32,8 @@
           second #(second code)
           third #(third code)]
       (cond
-        (= '+ first)
-          (str "(" (translate-js (second)) " + " (translate-js (third)) ")")
+        (infix? first)
+          (str "(" (translate-js (second)) " " first " " (translate-js (third)) ")")
         (anon? first)
           (str "function (" (comma-sep (second)) ") { " (translate-js (third)) " }")
         (return? first)
@@ -49,8 +52,8 @@
           second #(second code)
           third #(third code)] 
       (cond
-        (= '+ first)
-          (str "(" (translate-ruby (second)) " + " (translate-ruby (third)) ")")
+        (infix? first)
+          (str "(" (translate-ruby (second)) " " first " " (translate-ruby (third)) ")")
         (anon? first)
           (str "->"
                (let [params (second)]
