@@ -20,6 +20,7 @@
 
 (def anon? #(or (= 'anon %) (= 'λ %)))
 (def define? #(= 'define %))
+(def -set? #(= 'set %))
 (def return? #(= 'return %))
 (def call? #(= 'call %))
 
@@ -40,6 +41,8 @@
           (str "return " (translate-js (second)))
         (call? first)
           (str "(" (translate-js (second)) ")(" (comma-sep (third)) ")")
+        (-set? first)
+          (str (second) " = " (translate-js (third)))
         (define? first)
           (str "var " (second) " = " (translate-js (third)))))))
 
@@ -59,7 +62,7 @@
                (let [params (second)]
                  (if (empty? params) "" (str "(" (comma-sep params) ")")))
                "{ " (translate-ruby (third)) " }")
-        (define? first)
+        (or (-set? first) (define? first))
           (str (second) " = " (translate-ruby (third)))
         (return? first)
           ((comp str translate-ruby second))

@@ -44,6 +44,12 @@
 (deftest javascript-translate-of-define-2
   (is (= "var answer = 99" (translate :javascript (metalang (define answer 99))))))
 
+(deftest javascript-set
+  (is (= "answer = 42" (translate :javascript (metalang (set answer 42))))))
+
+(deftest ruby-set
+  (is (= "answer = 42" (translate :ruby (metalang (set answer 42))))))
+
 (deftest ruby-translate-of-define-returns-assignment
   (is (= "answer = 42" (translate :ruby (metalang (define answer 42))))))
 
