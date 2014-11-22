@@ -7,4 +7,4 @@
   (let [f (first code)] 
     (cond
       (= 'anon f) "-> {}"
-      (= 'define f) "answer = 42")))
+      (= 'define f) (str (name (nth code 1)) " = 42"))))
