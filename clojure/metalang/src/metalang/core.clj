@@ -3,14 +3,9 @@
 (defmacro metalang [code]
   `(quote ~code))
 
-(defn comma-sep [values]
-  (clojure.string/join ", " values))
-
-(defn semi-nl-sep [values]
-  (clojure.string/join ";\n" values))
-
-(defn nl-sep [values]
-  (clojure.string/join "\n" values))
+(def comma-sep #(clojure.string/join ", " %))
+(def semi-nl-sep #(clojure.string/join ";\n" %))
+(def nl-sep #(clojure.string/join "\n" %))
 
 (defn third [items]
   (nth items 2))

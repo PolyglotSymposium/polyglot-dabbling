@@ -20,6 +20,9 @@
 (deftest javascript-translate-of-metalang-λ-returns-function
   (is (= "function () {  }" (translate :javascript (metalang (λ [] ()))))))
 
+(deftest clojure-translate-of-metalang-λ-returns-function
+  (is (= "(fn [] )" (translate :clojure (metalang (λ [] ()))))))
+
 (deftest ruby-translate-of-metalang-λ-2
   (is (= "->(a){  }" (translate :ruby (metalang (λ [a] ()))))))
 
