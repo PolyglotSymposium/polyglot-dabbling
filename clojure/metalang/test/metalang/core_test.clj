@@ -11,6 +11,9 @@
 (deftest javascript-translate-of-metalang-anon-returns-function
   (is (= "function () {  }" (translate :javascript (metalang (anon [] ()))))))
 
+(deftest clojure-translate-of-metalang-anon-returns-fn
+  (is (= "(fn [] )" (translate :clojure (metalang (anon [] ()))))))
+
 (deftest ruby-translate-of-metalang-λ-returns-a-stabby-proc
   (is (= "->{  }" (translate :ruby (metalang (λ [] ()))))))
 

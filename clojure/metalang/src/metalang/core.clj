@@ -46,6 +46,9 @@
         (define? first)
           (str "var " (second) " = " (translate-js (third)))))))
 
+(defn translate-clj [code]
+  "(fn [] )")
+
 (defn translate-ruby [code]
   (if (not (list? code))
     (if (vector? code)
@@ -70,7 +73,8 @@
           (str "(" (translate-ruby (second)) ").(" (comma-sep (third)) ")")))))
 
 (def translator-of {:ruby translate-ruby
-                    :javascript translate-js})
+                    :javascript translate-js
+                    :clojure translate-clj})
 
 (defn translate [lang code]
   ((translator-of lang) code))
