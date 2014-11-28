@@ -3,9 +3,8 @@
 undef p
 
 def method_missing(tag, attrs = {})
-  str_attrs = attrs.map { |k, v| "#{k}=\"#{v}\"" }.join(' ')
-  final_attrs = str_attrs.empty? ? '' : " #{str_attrs}"
-  "<#{tag}#{final_attrs}" + (block_given? ? ">\n#{yield}\n</#{tag}>" : " />\n")
+  str_attrs = attrs.reduce('') { |mem, (k, v)| "#{mem} #{k}=\"#{v}\"" }
+  "<#{tag}#{str_attrs}" + (block_given? ? ">\n#{yield}\n</#{tag}>" : " />\n")
 end
 
 puts html {
