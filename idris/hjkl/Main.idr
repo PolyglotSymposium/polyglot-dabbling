@@ -6,5 +6,8 @@ import hjkl
 
 main : IO()
 main = do
-  x <- readFile "C:/Users/pinsonke/.gitconfig"
-  putStr $ unlines $ writeToList $ readFromList $ lines x
+  args <- getArgs
+  case args of
+       [] => putStrLn "Empty! How did you do that?!"
+       (arg :: []) => putStrLn "Yes? What do you want?"
+       (_ :: arg :: _) => putStr $ unlines $ writeToList $ readFromList $ lines (!(readFile arg))

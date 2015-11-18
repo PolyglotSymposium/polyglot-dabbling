@@ -35,6 +35,21 @@ writeToList : Lines v -> List String
 writeToList [] = []
 writeToList ((SizedString' _ s) :: lines) = s :: writeToList lines
 
+data Cursor : Nat -> Type where
+  EmptyLineCursor : Cursor Z
+  Cursor' : Fin k -> Cursor k
+
+boundColumnCursor : Cursor k -> Vect k Nat -> Type
+boundColumnCursor EmptyLineCursor [] = Cursor Z
+boundColumnCursor (Cursor' fin) nats = Cursor (index fin nats)
+
+data Buffer : Type where
+  Buffer' : {v : Vect rows Nat} ->
+            Lines v ->
+            (rowCursor : Cursor rows) ->
+            (colCursor : boundColumnCursor rowCursor v) ->
+            Buffer
+
 data Move x = Backward x | Forward x
 
 data ByCharacter = ByCharacter' Nat
