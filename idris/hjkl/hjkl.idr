@@ -18,6 +18,8 @@ data Lines : Vect k Nat -> Type where
   Nil : Lines []
   (::) : SizedString n -> Lines v -> Lines (n :: v)
 
+index : {v : Vect (S k) Nat} -> (i : Fin (S k)) -> Lines v -> SizedString (index i v)
+
 vectSizeVector : Vect k String -> Vect k Nat
 vectSizeVector = map length
 
@@ -36,19 +38,22 @@ writeToList [] = []
 writeToList ((SizedString' _ s) :: lines) = s :: writeToList lines
 
 data Cursor : Nat -> Type where
-  EmptyLineCursor : Cursor Z
+  EmptyCursor : Cursor Z
   Cursor' : Fin k -> Cursor k
 
 boundColumnCursor : Cursor k -> Vect k Nat -> Type
-boundColumnCursor EmptyLineCursor [] = Cursor Z
+boundColumnCursor EmptyCursor [] = Cursor Z
 boundColumnCursor (Cursor' fin) nats = Cursor (index fin nats)
 
-data Buffer : Type where
+data Buffer : Vect k Nat -> Type where
   Buffer' : {v : Vect rows Nat} ->
             Lines v ->
             (rowCursor : Cursor rows) ->
             (colCursor : boundColumnCursor rowCursor v) ->
-            Buffer
+            Buffer v
+
+emptyBuffer : Buffer []
+emptyBuffer = Buffer' [] EmptyCursor EmptyCursor
 
 data Move x = Backward x | Forward x
 
@@ -67,3 +72,15 @@ l x = Forward (ByCharacter' x)
 
 k : Nat -> Move ByLine
 k x = Backward (ByLine' x)
+
+moveByCharInLine : SizedString n -> Cursor n -> Move ByCharacter -> Cursor n 
+
+partial
+moveByChar : {v : Vect k Nat} -> Buffer v -> Move ByCharacter -> Buffer v
+moveByChar buffer (Backward (ByCharacter' Z)) = buffer
+moveByChar buffer (Forward (ByCharacter' Z)) = buffer
+moveByChar {v=[]} buffer _ = buffer
+moveByChar {v=[Z]} buffer _ = buffer
+moveByChar {v=n::ns} buffer@(Buffer' lines (Cursor' row) colCursor) movement =
+  Buffer' lines (Cursor' row) $ moveByCharInLine (index row lines) colCursor movement
+
