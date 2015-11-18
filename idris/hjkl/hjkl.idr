@@ -43,7 +43,7 @@ writeToList ((SizedString' _ s) :: lines) = s :: writeToList lines
 
 data Cursor : Nat -> Type where
   EmptyCursor : Cursor Z
-  Cursor' : Fin k -> Cursor k
+  Cursor' : Fin (S k) -> Cursor (S k)
 
 zeroCursor : (n : Nat) -> Cursor n
 zeroCursor Z = EmptyCursor
@@ -80,6 +80,29 @@ data ByCharacter = ByCharacter' Nat
 
 data ByLine = ByLine' Nat
 
+moveCursorBackward : Fin (S k) -> Nat -> Fin (S k)
+moveCursorBackward FZ _ = FZ
+moveCursorBackward (FS x) Z = (FS x)
+moveCursorBackward (FS x) (S k) = moveCursorBackward (weaken x) k
+
+moveCursorForward : Fin (S k) -> Nat -> Fin (S k)
+moveCursorForward x Z = x
+moveCursorForward x (S k) =
+  case strengthen x of
+       Left _ => x
+       Right x' => FS x'
+
+moveByCharInLine : Cursor n -> Move ByCharacter -> Cursor n 
+moveByCharInLine EmptyCursor y = EmptyCursor
+moveByCharInLine (Cursor' x) (Backward (ByCharacter' k)) = Cursor' $ moveCursorBackward x k
+moveByCharInLine (Cursor' x) (Forward (ByCharacter' k)) = Cursor' $ moveCursorForward x k
+
+partial
+moveByChar : {v : Vect k Nat} -> Buffer v -> Move ByCharacter -> Buffer v
+moveByChar (Buffer' lines rowCursor columnCursor) movement = ?hole
+  --let columnCursor' = moveByCharInLine columnCursor movement
+  --in Buffer' lines rowCursor columnCursor'
+
 h : Nat -> Move ByCharacter
 h x = Backward (ByCharacter' x)
 
@@ -91,28 +114,4 @@ l x = Forward (ByCharacter' x)
 
 k : Nat -> Move ByLine
 k x = Backward (ByLine' x)
-
-partial
-moveByCharInLine : SizedString n -> Cursor n -> Move ByCharacter -> Cursor n 
-moveByCharInLine _ EmptyCursor _ = EmptyCursor
-moveByCharInLine (SizedString' (S Z) _) cursor _ = cursor
-moveByCharInLine _ cursor@(Cursor' FZ) (Backward (ByCharacter' _)) = cursor
-moveByCharInLine _ cursor (Backward (ByCharacter' Z)) = cursor
-moveByCharInLine _ cursor (Forward (ByCharacter' Z)) = cursor
-moveByCharInLine string (Cursor' (FS cursor)) (Backward (ByCharacter' (S move))) =
-  moveByCharInLine string (Cursor' (weaken cursor)) (Backward (ByCharacter' move))
-moveByCharInLine string@(SizedString' (S (S j)) _) (Cursor' FZ) (Forward (ByCharacter' (S move))) =
-  moveByCharInLine string (Cursor' (FS FZ)) (Forward (ByCharacter' move))
-moveByCharInLine string cursor@(Cursor' (FS fin)) (Forward (ByCharacter' (S move))) =
-  case strengthen (FS fin) of
-       Left _ => cursor
-       Right strengthened => moveByCharInLine string (Cursor' (FS strengthened)) (Forward (ByCharacter' move))
-
-partial
-moveByChar : {v : Vect k Nat} -> Buffer v -> Move ByCharacter -> Buffer v
-moveByChar buffer (Backward (ByCharacter' Z)) = buffer
-moveByChar buffer (Forward (ByCharacter' Z)) = buffer
-moveByChar {v=[]} buffer _ = buffer
-moveByChar {v=n::ns} buffer@(Buffer' lines (Cursor' row) colCursor) movement =
-  Buffer' lines (Cursor' row) $ moveByCharInLine (index row lines) colCursor movement
 
