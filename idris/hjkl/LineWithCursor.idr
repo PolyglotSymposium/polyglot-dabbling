@@ -11,18 +11,27 @@ data Line : Nat -> Type where
 
 data Move = Backward Nat | Forward Nat
 
---total
-moveByChar : Line ll -> Move -> Line ll
-moveByChar EmptyLine _ = EmptyLine
-moveByChar (Line' line FZ) (Backward _) =
-  Line' line FZ
-moveByChar line (Backward Z) =
-  line
-moveByChar (Line' line (FS cursor')) (Backward (S move')) =
-  moveByChar (Line' line (weaken cursor')) (Backward move')
-moveByChar line (Forward Z) =
-  line
-moveByChar (Line' line cursor) (Forward (S move')) =
-  case strengthen cursor of
-       Left _ => Line' line cursor
-       Right cursor' => moveByChar (Line' line (FS cursor')) (Forward move')
+total
+moveCursorBackward : Fin (S k) -> Nat -> Fin (S k)
+moveCursorBackward FZ _ = FZ
+moveCursorBackward (FS x) Z = (FS x)
+moveCursorBackward (FS x) (S k) = moveCursorBackward (weaken x) k
+
+total
+moveCursorForward : Fin (S k) -> Nat -> Fin (S k)
+moveCursorForward x Z = x
+moveCursorForward x (S k) =
+  case strengthen x of
+       Left _ => x
+       Right x' => FS x'
+
+total
+moveCursor : Fin (S k) -> Move -> Fin (S k)
+moveCursor x (Backward k) = moveCursorBackward x k
+moveCursor x (Forward k) = moveCursorForward x k
+
+total
+move : Line ll -> Move -> Line ll
+move EmptyLine _ = EmptyLine
+move (Line' line cursor) movement =
+  Line' line $ moveCursor cursor movement
