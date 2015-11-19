@@ -51,16 +51,18 @@ zeroCursor Z = EmptyCursor
 zeroCursor (S k) = Cursor' FZ
 
 private
-boundColumnCursor : Cursor (S k) -> Vect (S k) Nat -> Type
-boundColumnCursor (Cursor' fin) nats = Cursor (index fin nats)
+boundColumnCursor : Cursor (S k) -> Vect (S k) Nat -> Nat
+boundColumnCursor (Cursor' fin) nats = index fin nats
 
 abstract
 data Buffer : Vect (S k) Nat -> Type where
   Buffer' : {v : Vect (S k) Nat} ->
             Lines v ->
             (rowCursor : Cursor (S k)) ->
-            (colCursor : boundColumnCursor rowCursor v) ->
+            (colCursor : Cursor (boundColumnCursor rowCursor v)) ->
             Buffer v
+
+%name Buffer buffer
 
 emptyBuffer : Buffer [Z]
 emptyBuffer = Buffer' [sizeString ""] (Cursor' FZ) EmptyCursor
@@ -96,18 +98,16 @@ moveCursorForward x Z = x
 moveCursorForward x (S k) =
   case strengthen x of
        Left _ => x
-       Right x' => FS x'
+       Right x' => moveCursorForward (FS x') k
 
 moveByCharInLine : Cursor n -> Move ByCharacter -> Cursor n 
 moveByCharInLine EmptyCursor y = EmptyCursor
 moveByCharInLine (Cursor' x) (Backward (ByCharacter' k)) = Cursor' $ moveCursorBackward x k
 moveByCharInLine (Cursor' x) (Forward (ByCharacter' k)) = Cursor' $ moveCursorForward x k
 
-partial
 moveByChar : {v : Vect (S k) Nat} -> Buffer v -> Move ByCharacter -> Buffer v
-moveByChar (Buffer' lines rowCursor columnCursor) movement = ?hole
-  --let columnCursor' = moveByCharInLine columnCursor movement
-  --in Buffer' lines rowCursor columnCursor'
+moveByChar (Buffer' lines rowCursor columnCursor) movement =
+  Buffer' lines rowCursor (moveByCharInLine columnCursor movement)
 
 h : Nat -> Move ByCharacter
 h x = Backward (ByCharacter' x)
