@@ -16,6 +16,7 @@ sizeString s = SizedString' (length s) s
 
 %name SizedString str
 
+abstract
 data Lines : Vect k Nat -> Type where
   Nil : Lines []
   (::) : SizedString n -> Lines v -> Lines (n :: v)
@@ -37,9 +38,9 @@ listSizeVector xs = vectSizeVector $ fromList xs
 readFromList : (xs : List String) -> Lines (listSizeVector xs)
 readFromList xs = readFromVect $ fromList xs
 
-writeToList : Lines v -> List String
-writeToList [] = []
-writeToList ((SizedString' _ s) :: lines) = s :: writeToList lines
+writeLinesToList : Lines v -> List String
+writeLinesToList [] = []
+writeLinesToList ((SizedString' _ s) :: lines) = s :: writeLinesToList lines
 
 data Cursor : Nat -> Type where
   EmptyCursor : Cursor Z
@@ -50,29 +51,34 @@ zeroCursor Z = EmptyCursor
 zeroCursor (S k) = Cursor' FZ
 
 private
-boundColumnCursor : Cursor k -> Vect k Nat -> Type
-boundColumnCursor EmptyCursor [] = Cursor Z
+boundColumnCursor : Cursor (S k) -> Vect (S k) Nat -> Type
 boundColumnCursor (Cursor' fin) nats = Cursor (index fin nats)
 
-data Buffer : Vect k Nat -> Type where
-  Buffer' : {v : Vect rows Nat} ->
+abstract
+data Buffer : Vect (S k) Nat -> Type where
+  Buffer' : {v : Vect (S k) Nat} ->
             Lines v ->
-            (rowCursor : Cursor rows) ->
+            (rowCursor : Cursor (S k)) ->
             (colCursor : boundColumnCursor rowCursor v) ->
             Buffer v
-
-zeroBuffer : Buffer []
-zeroBuffer = Buffer' [] EmptyCursor EmptyCursor
 
 emptyBuffer : Buffer [Z]
 emptyBuffer = Buffer' [sizeString ""] (Cursor' FZ) EmptyCursor
 
+private
 zeroRowCursor : (Cursor n -> Buffer v) -> Buffer v
 zeroRowCursor {n} partiallyConstructedBuffer = partiallyConstructedBuffer $ zeroCursor n
 
-readIntoBuffer : (xs: List String) -> Buffer (listSizeVector xs)
-readIntoBuffer [] = zeroBuffer
+bufferTypeFromStrings : (xs : List String) -> Type
+bufferTypeFromStrings [] = Buffer [Z]
+bufferTypeFromStrings (x :: xs) = Buffer $ listSizeVector (x :: xs)
+
+readIntoBuffer : (xs: List String) -> bufferTypeFromStrings xs
+readIntoBuffer [] = emptyBuffer
 readIntoBuffer (x :: xs) = zeroRowCursor $ Buffer' (readFromList $ x :: xs) (Cursor' FZ)
+
+writeToList : Buffer v -> List String
+writeToList (Buffer' l _ _) = writeLinesToList l
 
 data Move x = Backward x | Forward x
 
@@ -98,7 +104,7 @@ moveByCharInLine (Cursor' x) (Backward (ByCharacter' k)) = Cursor' $ moveCursorB
 moveByCharInLine (Cursor' x) (Forward (ByCharacter' k)) = Cursor' $ moveCursorForward x k
 
 partial
-moveByChar : {v : Vect k Nat} -> Buffer v -> Move ByCharacter -> Buffer v
+moveByChar : {v : Vect (S k) Nat} -> Buffer v -> Move ByCharacter -> Buffer v
 moveByChar (Buffer' lines rowCursor columnCursor) movement = ?hole
   --let columnCursor' = moveByCharInLine columnCursor movement
   --in Buffer' lines rowCursor columnCursor'
