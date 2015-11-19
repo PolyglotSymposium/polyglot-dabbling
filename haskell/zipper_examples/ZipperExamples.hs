@@ -9,6 +9,10 @@ data ListZipper a =
   | Zipper [a] a [a]
   deriving (Show, Eq)
 
+instance Functor ListZipper where
+  fmap _ EmptyZipper = EmptyZipper
+  fmap f (Zipper left focus right) = Zipper (map f left) (f focus) (map f right)
+
 data Movement = LeftBy Int | RightBy Int
 
 move :: ListZipper a -> Movement -> ListZipper a
@@ -17,8 +21,8 @@ move zipper (LeftBy 0) = zipper
 move zipper (RightBy 0) = zipper
 move zipper@(Zipper [] x xs) (LeftBy _) = zipper
 move zipper@(Zipper xs x []) (RightBy _) = zipper
-move zipper@(Zipper (l:ls) x rs) (LeftBy n) = move (Zipper ls l (x:rs)) (LeftBy $ n - 1)
-move zipper@(Zipper ls x (r:rs)) (RightBy n) = move (Zipper (x:ls) r rs) (RightBy $ n - 1)
+move zipper@(Zipper (l:ls) x rs) (LeftBy n) = move (Zipper ls l $ x:rs) $ LeftBy $ n - 1
+move zipper@(Zipper ls x (r:rs)) (RightBy n) = move (Zipper (x:ls) r rs) $ RightBy $ n - 1
 
 fromList :: [a] -> ListZipper a
 fromList [] = EmptyZipper
@@ -37,6 +41,27 @@ arbitrary_non_empty_zipper = do
 
 main :: IO ()
 main = hspec $ do
+  describe "The zipper's functor instance" $ do
+    it "abides the identity application law" $ do
+      property $ forAll arbitrary_non_empty_zipper $ \zipper ->
+        fmap id zipper == zipper
+    it "abides the identity application law for empty" $ do
+      let exampleEmptyZipper = EmptyZipper :: ListZipper Int
+      fmap id exampleEmptyZipper `shouldBe` exampleEmptyZipper
+
+    it "abides composition for some examples" $ do
+      property $ \n m ->
+        forAll arbitrary_non_empty_zipper $ \zipper ->
+          fmap ((+ n) . (+ m)) zipper == (fmap (+ n) . fmap (+ m)) zipper &&
+          fmap (show . (+ m)) zipper == (fmap show . fmap (+ m)) zipper
+
+    it "abides composition for some examples on empty" $ do
+      let z = EmptyZipper :: ListZipper Int
+      property $ \n m ->
+        fmap ((+ n) . (+ m)) z == (fmap (+ n) . fmap (+ m)) z &&
+        fmap (show . (+ m)) z == (fmap show . fmap (+ m)) z
+
+--  fmap (p . q) = (fmap p) . (fmap q)
   describe "ListZipper" $ do
     describe "move" $ do
       describe "to the left" $ do
