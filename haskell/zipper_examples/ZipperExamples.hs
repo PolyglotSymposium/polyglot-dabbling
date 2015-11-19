@@ -17,6 +17,8 @@ move zipper (LeftBy 0) = zipper
 move zipper (RightBy 0) = zipper
 move zipper@(Zipper [] x xs) (LeftBy _) = zipper
 move zipper@(Zipper xs x []) (RightBy _) = zipper
+move zipper@(Zipper (l:ls) x rs) (LeftBy n) = move (Zipper ls l (x:rs)) (LeftBy $ n - 1)
+move zipper@(Zipper ls x (r:rs)) (RightBy n) = move (Zipper (x:ls) r rs) (RightBy $ n - 1)
 
 fromList :: [a] -> ListZipper a
 fromList [] = EmptyZipper
@@ -42,6 +44,15 @@ main = hspec $ do
           it "does not modify the zipper" $ do
            property $ forAll arbitrary_non_empty_zipper $ \zipper -> move zipper (LeftBy 0) == zipper
 
+        describe "by 1, in the middle of a zipper" $ do
+          it "scoots the values over correctly" $ do
+           property $ \lefts initialFocus rights ->
+             not (null lefts) ==>
+               let
+                 (newFocus:lefts') = lefts
+               in
+                 move (Zipper lefts (initialFocus :: Int) rights) (LeftBy 1) == Zipper lefts' newFocus (initialFocus:rights)
+
         describe "by any amount on the empty zipper" $ do
           it "does not modify the zipper" $ do
            property $ \n ->
@@ -52,10 +63,25 @@ main = hspec $ do
            property $ \x xs n ->
              n > 0 ==> move (Zipper [] (x :: Int) xs) (LeftBy n) == Zipper [] x xs
 
+        describe "by n" $ do
+          it "is the same as moving to the left by 1, n times" $ do
+            property $ forAll (elements [0..1000]) $ \n ->
+              forAll arbitrary_non_empty_zipper $ \zipper ->
+                move zipper (LeftBy n) == (iterate (flip move $ LeftBy 1) zipper) !! n
+
       describe "to the right" $ do
         describe "by 0" $ do
           it "does not modify the zipper" $ do
            property $ forAll arbitrary_non_empty_zipper $ \zipper -> move zipper (RightBy 0) == zipper
+
+        describe "by 1, in the middle of a zipper" $ do
+          it "scoots the values over correctly" $ do
+           property $ \lefts initialFocus rights ->
+             not (null rights) ==>
+               let
+                 (newFocus:rights') = rights
+               in
+                 move (Zipper lefts (initialFocus :: Int) rights) (RightBy 1) == Zipper (initialFocus:lefts) newFocus rights'
 
         describe "by any amount on the empty zipper" $ do
           it "does not modify the zipper" $ do
@@ -67,6 +93,11 @@ main = hspec $ do
            property $ \x xs n ->
              n > 0 ==> move (Zipper xs (x :: Int) []) (RightBy n) == Zipper xs x []
 
+        describe "by n" $ do
+          it "is the same as moving to the right by 1, n times" $ do
+            property $ forAll (elements [0..1000]) $ \n ->
+              forAll arbitrary_non_empty_zipper $ \zipper ->
+                move zipper (RightBy n) == (iterate (flip move $ RightBy 1) zipper) !! n
 
     describe "insertFront" $ do
       describe "into empty" $ do
