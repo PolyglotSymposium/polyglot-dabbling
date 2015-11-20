@@ -11,10 +11,20 @@ abstract
 data SizedString : Nat -> Type where
   SizedString' : (n : Nat) -> (s : String) -> SizedString n
 
+%name SizedString str
+
 sizeString : (s : String) -> SizedString (length s)
 sizeString s = SizedString' (length s) s
 
-%name SizedString str
+size : SizedString n -> Nat
+size {n} _ = n
+
+partial
+strIndex : SizedString n -> Fin n -> Char
+strIndex (SizedString' _ s) x = strIndex s $ cast $ finToNat x
+
+instance Cast (SizedString n) String where
+  cast (SizedString' _ s) = s
 
 abstract
 data Lines : Vect k Nat -> Type where
@@ -50,16 +60,15 @@ zeroCursor : (n : Nat) -> Cursor n
 zeroCursor Z = EmptyCursor
 zeroCursor (S k) = Cursor' FZ
 
-private
-boundColumnCursor : Cursor (S k) -> Vect (S k) Nat -> Nat
-boundColumnCursor (Cursor' fin) nats = index fin nats
+columnsInLine : {v : Vect (S k) Nat} -> Cursor (S k) -> Lines v -> Nat
+columnsInLine (Cursor' fin) lines = size $ index fin lines
 
 abstract
 data Buffer : Vect (S k) Nat -> Type where
   Buffer' : {v : Vect (S k) Nat} ->
-            Lines v ->
+            (ls : Lines v) ->
             (rowCursor : Cursor (S k)) ->
-            (colCursor : Cursor (boundColumnCursor rowCursor v)) ->
+            (colCursor : Cursor (columnsInLine rowCursor ls)) ->
             Buffer v
 
 %name Buffer buffer
@@ -108,6 +117,20 @@ moveByCharInLine (Cursor' x) (Forward (ByCharacter' k)) = Cursor' $ moveCursorFo
 moveByChar : {v : Vect (S k) Nat} -> Buffer v -> Move ByCharacter -> Buffer v
 moveByChar (Buffer' lines rowCursor columnCursor) movement =
   Buffer' lines rowCursor (moveByCharInLine columnCursor movement)
+
+currentLineSize : Buffer v -> Nat
+currentLineSize (Buffer' lines rowCursor _) = columnsInLine rowCursor lines
+
+currentLine : (b: Buffer v) -> SizedString (currentLineSize b)
+currentLine (Buffer' lines (Cursor' row) _) = index row lines
+
+partial
+charUnderCursor : Buffer v -> Maybe Char
+charUnderCursor buffer@(Buffer' ls rowCursor colCursor) =
+  charUnderCursor' (currentLine buffer) colCursor where
+    partial charUnderCursor' : SizedString n -> Cursor n -> Maybe Char
+    charUnderCursor' {n=Z} str EmptyCursor = Nothing
+    charUnderCursor' {n=S j} str (Cursor' idx) = Just $ strIndex str idx
 
 h : Nat -> Move ByCharacter
 h x = Backward (ByCharacter' x)
