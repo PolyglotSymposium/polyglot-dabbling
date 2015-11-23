@@ -3,28 +3,10 @@ module hjkl
 import Data.Fin
 import Data.Vect
 
+import SizedStrings
+
 %default total
-
 %access public
-
-abstract
-data SizedString : Nat -> Type where
-  SizedString' : (n : Nat) -> (s : String) -> SizedString n
-
-%name SizedString str
-
-sizeString : (s : String) -> SizedString (length s)
-sizeString s = SizedString' (length s) s
-
-size : SizedString n -> Nat
-size {n} _ = n
-
-partial
-strIndex : SizedString n -> Fin n -> Char
-strIndex (SizedString' _ s) x = strIndex s $ cast $ finToNat x
-
-instance Cast (SizedString n) String where
-  cast (SizedString' _ s) = s
 
 abstract
 data Lines : Vect k Nat -> Type where
@@ -50,7 +32,7 @@ readFromList xs = readFromVect $ fromList xs
 
 writeLinesToList : Lines v -> List String
 writeLinesToList [] = []
-writeLinesToList ((SizedString' _ s) :: lines) = s :: writeLinesToList lines
+writeLinesToList (l :: ls) = cast l :: writeLinesToList ls
 
 data Cursor : Nat -> Type where
   EmptyCursor : Cursor Z
@@ -61,7 +43,7 @@ zeroCursor Z = EmptyCursor
 zeroCursor (S k) = Cursor' FZ
 
 columnsInLine : {v : Vect (S k) Nat} -> Cursor (S k) -> Lines v -> Nat
-columnsInLine (Cursor' fin) lines = size $ index fin lines
+columnsInLine (Cursor' fin) lines = length $ index fin lines
 
 abstract
 data Buffer : Vect (S k) Nat -> Type where
@@ -124,11 +106,10 @@ currentLineSize (Buffer' lines rowCursor _) = columnsInLine rowCursor lines
 currentLine : (b: Buffer v) -> SizedString (currentLineSize b)
 currentLine (Buffer' lines (Cursor' row) _) = index row lines
 
-partial
 charUnderCursor : Buffer v -> Maybe Char
 charUnderCursor buffer@(Buffer' ls rowCursor colCursor) =
   charUnderCursor' (currentLine buffer) colCursor where
-    partial charUnderCursor' : SizedString n -> Cursor n -> Maybe Char
+    charUnderCursor' : SizedString n -> Cursor n -> Maybe Char
     charUnderCursor' {n=Z} str EmptyCursor = Nothing
     charUnderCursor' {n=S j} str (Cursor' idx) = Just $ strIndex str idx
 
