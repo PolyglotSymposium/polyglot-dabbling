@@ -14,6 +14,8 @@ data Move : By -> Type where
   Backward : {by : By} -> Nat -> Move by
   Forward : {by : By} -> Nat -> Move by
 
+%name Move movement
+
 private
 data RowCursor : Nat -> Type where
   EmptyRowCursor : RowCursor Z

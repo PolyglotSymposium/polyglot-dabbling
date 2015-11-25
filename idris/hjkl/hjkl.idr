@@ -65,14 +65,18 @@ readIntoBuffer (x :: xs) = Buffer' (readFromList $ x :: xs) zeroRowCursor
 writeToList : Buffer v -> List String
 writeToList (Buffer' l _) = writeLinesToList l
 
-moveByChar : {v : Vect (S k) Nat} -> Buffer v -> Move ByCharacter -> Buffer v
+moveByChar : Buffer v -> Move ByCharacter -> Buffer v
 moveByChar (Buffer' lines cursor) movement =
   let newCursor = moveByChar cursor movement
   in Buffer' lines newCursor
 
-moveByLine : {v : Vect (S k) Nat} -> Buffer v -> Move ByLine -> Buffer v
+moveByLine : Buffer v -> Move ByLine -> Buffer v
 moveByLine (Buffer' lines cursor) movement =
   Buffer' lines (moveByLine cursor movement)
+
+move : Buffer v -> Move by -> Buffer v
+move {by = ByCharacter} = moveByChar
+move {by = ByLine} = moveByLine
 
 charUnderCursor : Buffer v -> Maybe Char
 charUnderCursor (Buffer' lines cursor) =
