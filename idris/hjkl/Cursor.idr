@@ -6,11 +6,13 @@ import Data.Vect
 %default total
 %access public
 
-data Move x = Backward x | Forward x
+data By =
+  ByCharacter
+  | ByLine
 
-data ByCharacter = ByCharacter' Nat
-
-data ByLine = ByLine' Nat
+data Move : By -> Type where
+  Backward : {by : By} -> Nat -> Move by
+  Forward : {by : By} -> Nat -> Move by
 
 private
 data RowCursor : Nat -> Type where
@@ -72,8 +74,8 @@ moveCursorForward x (S k) =
 private
 moveByCharInLine : RowCursor n -> Move ByCharacter -> RowCursor n 
 moveByCharInLine EmptyRowCursor y = EmptyRowCursor
-moveByCharInLine (RowCursor' x) (Backward (ByCharacter' k)) = RowCursor' $ moveCursorBackward x k
-moveByCharInLine (RowCursor' x) (Forward (ByCharacter' k)) = RowCursor' $ moveCursorForward x k
+moveByCharInLine (RowCursor' x) (Backward k) = RowCursor' $ moveCursorBackward x k
+moveByCharInLine (RowCursor' x) (Forward k) = RowCursor' $ moveCursorForward x k
 
 moveByChar : Cursor v -> Move ByCharacter -> Cursor v
 moveByChar (Cursor' rowCursor columnCursor _) movement =
@@ -94,9 +96,9 @@ adjustColumnCursor {n = (S j)} k = RowCursor' $ adjustColumnIndex k
 
 private
 moveRowCursorByLine : Fin (S n) -> Move ByLine -> Fin (S n)
-moveRowCursorByLine rowCursor (Backward (ByLine' k)) =
+moveRowCursorByLine rowCursor (Backward k) =
   moveCursorBackward rowCursor k
-moveRowCursorByLine rowCursor (Forward (ByLine' k)) =
+moveRowCursorByLine rowCursor (Forward k) =
   moveCursorForward rowCursor k
 
 

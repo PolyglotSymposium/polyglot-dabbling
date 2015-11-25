@@ -81,14 +81,14 @@ charUnderCursor (Buffer' lines cursor) =
   in map (strIndex line) maybeColIndex
 
 h : Nat -> Move ByCharacter
-h x = Backward (ByCharacter' x)
+h x = Backward x
 
 j : Nat -> Move ByLine
-j x = Forward (ByLine' x)
+j x = Forward x
 
 l : Nat -> Move ByCharacter
-l x = Forward (ByCharacter' x)
+l x = Forward x
 
 k : Nat -> Move ByLine
-k x = Backward (ByLine' x)
+k x = Backward x
 
