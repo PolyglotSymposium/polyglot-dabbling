@@ -80,3 +80,29 @@ moveByChar (Cursor' rowCursor columnCursor _) movement =
   let newColCursor = moveByCharInLine columnCursor movement
   in Cursor' rowCursor newColCursor (rowCursorToNat newColCursor)
 
+private
+adjustColumnIndex : Nat -> Fin (S n)
+adjustColumnIndex {n} prevColumn =
+  case natToFin prevColumn (S n) of
+       Nothing => last
+       Just x => x
+
+private
+adjustColumnCursor : Nat -> RowCursor n
+adjustColumnCursor {n = Z} _ = EmptyRowCursor
+adjustColumnCursor {n = (S j)} k = RowCursor' $ adjustColumnIndex k
+
+private
+moveRowCursorByLine : Fin (S n) -> Move ByLine -> Fin (S n)
+moveRowCursorByLine rowCursor (Backward (ByLine' k)) =
+  moveCursorBackward rowCursor k
+moveRowCursorByLine rowCursor (Forward (ByLine' k)) =
+  moveCursorForward rowCursor k
+
+
+moveByLine : Cursor v -> Move ByLine -> Cursor v
+moveByLine (Cursor' rowCursor columnCursor prevColumn) movement =
+  let newRowCursor = moveRowCursorByLine rowCursor movement
+  in Cursor' newRowCursor (adjustColumnCursor prevColumn) prevColumn
+
+

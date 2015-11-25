@@ -72,7 +72,7 @@ moveByChar (Buffer' lines cursor) movement =
 
 moveByLine : {v : Vect (S k) Nat} -> Buffer v -> Move ByLine -> Buffer v
 moveByLine (Buffer' lines cursor) movement =
-  Buffer' lines (?moveByLineInBuffer cursor movement)
+  Buffer' lines (moveByLine cursor movement)
 
 charUnderCursor : Buffer v -> Maybe Char
 charUnderCursor (Buffer' lines cursor) =
