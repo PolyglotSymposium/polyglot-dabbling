@@ -4,6 +4,7 @@ import Data.Fin
 import Data.Vect
 
 import SizedStrings
+import Cursor
 
 %default total
 %access public
@@ -16,6 +17,13 @@ data Lines : Vect k Nat -> Type where
 index : {v : Vect k Nat} -> (i : Fin k) -> Lines v -> SizedString (index i v)
 index FZ (x :: xs) = x
 index (FS y) (x :: xs) = index y xs
+
+line_length_equals_size_from_type : {v : Vect k Nat} -> (i : Fin k) -> (ll : Lines v) -> 
+                                    length (index i ll) = index i v
+line_length_equals_size_from_type FZ [] impossible
+line_length_equals_size_from_type (FS _) [] impossible
+line_length_equals_size_from_type FZ (_ :: _) = Refl
+line_length_equals_size_from_type (FS _) (_ :: _) = Refl
 
 vectSizeVector : Vect k String -> Vect k Nat
 vectSizeVector = map length
@@ -34,33 +42,17 @@ writeLinesToList : Lines v -> List String
 writeLinesToList [] = []
 writeLinesToList (l :: ls) = cast l :: writeLinesToList ls
 
-data Cursor : Nat -> Type where
-  EmptyCursor : Cursor Z
-  Cursor' : Fin (S k) -> Cursor (S k)
-
-zeroCursor : (n : Nat) -> Cursor n
-zeroCursor Z = EmptyCursor
-zeroCursor (S k) = Cursor' FZ
-
-columnsInLine : {v : Vect (S k) Nat} -> Cursor (S k) -> Lines v -> Nat
-columnsInLine (Cursor' fin) lines = length $ index fin lines
-
 abstract
 data Buffer : Vect (S k) Nat -> Type where
   Buffer' : {v : Vect (S k) Nat} ->
             (ls : Lines v) ->
-            (rowCursor : Cursor (S k)) ->
-            (colCursor : Cursor (columnsInLine rowCursor ls)) ->
+            (cursor : Cursor v) ->
             Buffer v
 
 %name Buffer buffer
 
 emptyBuffer : Buffer [Z]
-emptyBuffer = Buffer' [sizeString ""] (Cursor' FZ) EmptyCursor
-
-private
-zeroRowCursor : (Cursor n -> Buffer v) -> Buffer v
-zeroRowCursor {n} partiallyConstructedBuffer = partiallyConstructedBuffer $ zeroCursor n
+emptyBuffer = Buffer' [sizeString ""] emptyBufferCursor
 
 bufferTypeFromStrings : (xs : List String) -> Type
 bufferTypeFromStrings [] = Buffer [Z]
@@ -68,50 +60,25 @@ bufferTypeFromStrings (x :: xs) = Buffer $ listSizeVector (x :: xs)
 
 readIntoBuffer : (xs: List String) -> bufferTypeFromStrings xs
 readIntoBuffer [] = emptyBuffer
-readIntoBuffer (x :: xs) = zeroRowCursor $ Buffer' (readFromList $ x :: xs) (Cursor' FZ)
+readIntoBuffer (x :: xs) = Buffer' (readFromList $ x :: xs) zeroRowCursor
 
 writeToList : Buffer v -> List String
-writeToList (Buffer' l _ _) = writeLinesToList l
-
-data Move x = Backward x | Forward x
-
-data ByCharacter = ByCharacter' Nat
-
-data ByLine = ByLine' Nat
-
-moveCursorBackward : Fin (S k) -> Nat -> Fin (S k)
-moveCursorBackward FZ _ = FZ
-moveCursorBackward (FS x) Z = (FS x)
-moveCursorBackward (FS x) (S k) = moveCursorBackward (weaken x) k
-
-moveCursorForward : Fin (S k) -> Nat -> Fin (S k)
-moveCursorForward x Z = x
-moveCursorForward x (S k) =
-  case strengthen x of
-       Left _ => x
-       Right x' => moveCursorForward (FS x') k
-
-moveByCharInLine : Cursor n -> Move ByCharacter -> Cursor n 
-moveByCharInLine EmptyCursor y = EmptyCursor
-moveByCharInLine (Cursor' x) (Backward (ByCharacter' k)) = Cursor' $ moveCursorBackward x k
-moveByCharInLine (Cursor' x) (Forward (ByCharacter' k)) = Cursor' $ moveCursorForward x k
+writeToList (Buffer' l _) = writeLinesToList l
 
 moveByChar : {v : Vect (S k) Nat} -> Buffer v -> Move ByCharacter -> Buffer v
-moveByChar (Buffer' lines rowCursor columnCursor) movement =
-  Buffer' lines rowCursor (moveByCharInLine columnCursor movement)
+moveByChar (Buffer' lines cursor) movement =
+  let newCursor = moveByChar cursor movement
+  in Buffer' lines newCursor
 
-currentLineSize : Buffer v -> Nat
-currentLineSize (Buffer' lines rowCursor _) = columnsInLine rowCursor lines
-
-currentLine : (b: Buffer v) -> SizedString (currentLineSize b)
-currentLine (Buffer' lines (Cursor' row) _) = index row lines
+moveByLine : {v : Vect (S k) Nat} -> Buffer v -> Move ByLine -> Buffer v
+moveByLine (Buffer' lines cursor) movement =
+  Buffer' lines (?moveByLineInBuffer cursor movement)
 
 charUnderCursor : Buffer v -> Maybe Char
-charUnderCursor buffer@(Buffer' ls rowCursor colCursor) =
-  charUnderCursor' (currentLine buffer) colCursor where
-    charUnderCursor' : SizedString n -> Cursor n -> Maybe Char
-    charUnderCursor' {n=Z} str EmptyCursor = Nothing
-    charUnderCursor' {n=S j} str (Cursor' idx) = Just $ strIndex str idx
+charUnderCursor (Buffer' lines cursor) =
+  let line = index (currentRowIndex cursor) lines
+      maybeColIndex = currentColumnIndex cursor
+  in map (strIndex line) maybeColIndex
 
 h : Nat -> Move ByCharacter
 h x = Backward (ByCharacter' x)
