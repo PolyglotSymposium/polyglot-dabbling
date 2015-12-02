@@ -27,17 +27,17 @@ digits = pack <$> some digit
 numeral : Parser Expr
 numeral = lexeme $ Numeral <$> (cast <$> digits)
 
-binaryExpr : Parser () -> Parser Expr -> Parser Expr
-binaryExpr pchar pexpr = (Times <$> (pexpr <* pchar)) <*>| pexpr
+binaryExpr : (Expr -> Expr -> Expr) -> Parser () -> Parser Expr -> Parser Expr
+binaryExpr ctr pchar pexpr = (ctr <$> (pexpr <* pchar)) <*>| pexpr
 
 times : Parser Expr -> Parser Expr
-times = binaryExpr timesSign
+times = binaryExpr Times timesSign
 
 minus : Parser Expr -> Parser Expr
-minus = binaryExpr minusSign
+minus = binaryExpr Minus minusSign
 
 plus : Parser Expr -> Parser Expr
-plus = binaryExpr plusSign
+plus = binaryExpr Plus plusSign
 
 negate : Parser Expr -> Parser Expr
 negate p = Negate <$> (minusSign *> p)
