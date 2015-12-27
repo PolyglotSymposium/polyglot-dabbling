@@ -9,14 +9,21 @@ import Syntax
 
 %access private
 
-plusSign : Parser ()
-plusSign = token "+"
+data Token =
+  NumericToken Integer
+  | PlusOp
+  | MinusOp
+  | TimesOp
+  | NegateOp
 
-minusSign : Parser ()
-minusSign = token "-"
+plusSign : Parser Token
+plusSign = (\x => PlusOp) <$> token "+"
 
-timesSign : Parser ()
-timesSign = token "*"
+minusSign : Parser Token
+minusSign = (\x => MinusOp) <$> token "-"
+
+timesSign : Parser Token
+timesSign = (\x => TimesOp) <$> token "*"
 
 digit : Parser Char
 digit = satisfy isDigit
@@ -24,29 +31,15 @@ digit = satisfy isDigit
 digits : Parser String
 digits = pack <$> some digit
 
-numeral : Parser Expr
-numeral = lexeme $ Numeral <$> (cast <$> digits)
+numeral : Parser Token
+numeral = lexeme $ NumericToken <$> (cast <$> digits)
 
-binaryExpr : (Expr -> Expr -> Expr) -> Parser () -> Parser Expr -> Parser Expr
-binaryExpr ctr pchar pexpr = (ctr <$> (pexpr <* pchar)) <*>| pexpr
+singleToken : Parser Token
+singleToken = plusSign <|>|
+              minusSign <|>|
+              timesSign <|>|
+              numeral
 
-times : Parser Expr -> Parser Expr
-times = binaryExpr Times timesSign
-
-minus : Parser Expr -> Parser Expr
-minus = binaryExpr Minus minusSign
-
-plus : Parser Expr -> Parser Expr
-plus = binaryExpr Plus plusSign
-
-negate : Parser Expr -> Parser Expr
-negate p = Negate <$> (minusSign *> p)
-
-public
-exprParser : Parser Expr
-exprParser = times numeral <|>|
-             plus numeral <|>|
-             minus numeral <|>|
-             negate numeral <|>|
-             numeral
+tokenizer : Parser (List Token)
+tokenizer = manyTill singleToken endOfLine
 

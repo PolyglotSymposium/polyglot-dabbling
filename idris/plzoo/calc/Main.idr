@@ -14,6 +14,7 @@ calculate input =
   case parse exprParser input of
        Left error => error
        Right expr => show $ eval expr
+  ++ "\n"
 
 main : IO ()
 main = do
