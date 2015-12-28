@@ -1,6 +1,7 @@
 module Rubik
 
 import Data.List
+import Data.Vect
 
 %default total
 %access public
@@ -87,6 +88,38 @@ data Adjacency3 : SubcubeKind -> Type where
   EdgeAdj3 : Subcube Center -> Subcube Center -> Subcube Edge -> Subcube Edge -> Adjacency3 Edge
   CornerAdj3 : Subcube Edge -> Subcube Edge -> Subcube Edge -> Adjacency3 Corner
 
+UnitOfRotation2 : Type
+UnitOfRotation2 = (Subcube Corner, Subcube Corner, Subcube Corner, Subcube Corner)
+
+data FaceId = Up | Down | Left | Right | Front | Back
+
+%name FaceId faceId
+
+--CenterId : Type
+
+data EdgeId =
+  UF
+  | UR
+  | UB
+  | UL
+  | FR
+  | RB
+  | BL
+  | LF
+  | DF
+  | DR
+  | DB
+  | DL
+
+CornerId : Type
+CornerId = (FaceId, FaceId, FaceId)
+
+data RotationDirection = CW | CCW
+
+%name RotationDirection rot
+
+data AxisId = Vertical | Depth | Horizontal
+
 Cube2 : Type
 Cube2 = (Subcube Corner, Subcube Corner, Subcube Corner, Subcube Corner, Subcube Corner, Subcube Corner, Subcube Corner, Subcube Corner)
 
@@ -104,12 +137,89 @@ solvedCube2 = (
   CornerCube Blue Yellow Orange {prf=Refl}
   )
 
-UnitOfRotation2 : Type
-UnitOfRotation2 = (Subcube Corner, Subcube Corner, Subcube Corner, Subcube Corner)
+UnitOfRotation2_v2 : Type
+UnitOfRotation2_v2 = Vect 4 (CornerId, Subcube Corner)
 
-data FaceId = Up | Down | Left | Right | Front | Back
+Cube2_v2 : Type
+Cube2_v2 = Vect 8 (CornerId, Subcube Corner)
 
-%name FaceId faceId
+%name Cube2_v2 cube
+
+solvedCube2_v2 : Cube2_v2
+solvedCube2_v2 = [
+  ((Up, Front, Right), CornerCube Green Red White {prf=Refl}),
+  ((Up, Front, Left), CornerCube Green White Orange {prf=Refl}),
+  ((Up, Right, Back), CornerCube Blue White Red {prf=Refl}),
+  ((Up, Left, Back), CornerCube Blue Orange White {prf=Refl}),
+  ((Down, Right, Front), CornerCube Green Yellow Red {prf=Refl}),
+  ((Down, Front, Left), CornerCube Green Orange Yellow {prf=Refl}),
+  ((Down, Right, Back), CornerCube Blue Red Yellow {prf=Refl}),
+  ((Down, Back, Left), CornerCube Blue Yellow Orange {prf=Refl})
+  ]
+
+instance Eq FaceId where
+  Up == Up = True
+  Down == Down = True
+  Left == Left = True
+  Right == Right = True
+  Front == Front = True
+  Back == Back = True
+  _ == _ = False
+
+oppositeFace : FaceId -> FaceId
+oppositeFace Up = Down
+oppositeFace Down = Up
+oppositeFace Left = Right
+oppositeFace Right = Left
+oppositeFace Front = Back
+oppositeFace Back = Front
+
+||| E.g.
+||| rotateFace CW Up Left
+||| Rotates the left face with respect to the up face.
+private
+rotateFaceCW : FaceId -> FaceId -> FaceId
+rotateFaceCW Up Left = Back
+rotateFaceCW Up Right = Front
+rotateFaceCW Up Front = Left
+rotateFaceCW Up Back = Right
+rotateFaceCW Down Left = Front
+rotateFaceCW Down Right = Back
+rotateFaceCW Down Front = Right
+rotateFaceCW Down Back = Left
+rotateFaceCW Left Up = Front
+rotateFaceCW Left Down = Back
+rotateFaceCW Left Front = Down
+rotateFaceCW Left Back = Up
+rotateFaceCW Right Up = Back
+rotateFaceCW Right Down = Front
+rotateFaceCW Right Front = Up
+rotateFaceCW Right Back = Down
+rotateFaceCW Front Left = Up
+rotateFaceCW Front Right = Down
+rotateFaceCW Front Up = Right
+rotateFaceCW Front Down = Left
+rotateFaceCW Back Left = Down
+rotateFaceCW Back Right = Up
+rotateFaceCW Back Up = Left
+rotateFaceCW Back Down = Right
+rotateFaceCW face1 face2 = face2
+
+rotateFace : RotationDirection -> FaceId -> FaceId -> FaceId
+rotateFace CW face1 face2 = rotateFaceCW face1 face2
+rotateFace CCW face1 face2 = rotateFaceCW (oppositeFace face1) face2
+
+rotateEdge' : (FaceId, FaceId) -> RotationDirection -> FaceId -> (FaceId, FaceId)
+rotateEdge' (face1, face2) rotd face0 =
+  let rotate = rotateFace rotd face0
+  in (rotate face1, rotate face2)
+
+rotateCorner : CornerId -> RotationDirection -> FaceId -> CornerId
+rotateCorner (face1, face2, face3) rotd face0 =
+  let rotate = rotateFace rotd face0
+  in (rotate face1, rotate face2, rotate face3)
+
+rotate2 : Cube2 -> RotationDirection -> FaceId -> Cube2
 
 unitOfRotation : Cube2 -> FaceId -> UnitOfRotation2
 unitOfRotation (corner1, corner2, corner3, corner4, _) Up =
@@ -124,6 +234,14 @@ unitOfRotation (corner1, corner2, _, _, corner5, corner6, _) Front =
   (corner1, corner2, corner5, corner6)
 unitOfRotation (_, _, corner3, corner4, _, _, corner7, corner8) Back =
   (corner3, corner4, corner7, corner8)
+
+cornerOfFace : FaceId -> CornerId -> Bool
+cornerOfFace face0 (face1, face2, face3) =
+  face1 == face0 || face2 == face0 || face3 == face0
+
+unitOfRotation2_v2 : Cube2_v2 -> FaceId -> UnitOfRotation2_v2
+unitOfRotation2_v2 cube faceId = ?asdfasdf
+  --Vect.filter (\x => cornerOfFace faceId $ fst x) cube
 
 twoCornersColorsInCommon : Subcube Corner -> Subcube Corner -> List Color
 twoCornersColorsInCommon (CornerCube c1 c2 c3) (CornerCube c4 c5 c6) =
@@ -147,12 +265,16 @@ isSolved2 cube =
   (uor2ColorsInCommon $ unitOfRotation cube Front) == [Green] &&
   (uor2ColorsInCommon $ unitOfRotation cube Back) == [Blue]
 
+isSolved2_v2 : Cube2 -> Bool
+isSolved2_v2 cube = ?asdfqwer
+
+
 u2 : Cube2 -> Cube2
 u2 (corner1, corner2, corner3, corner4, tail) =
   (corner3, corner1, corner4, corner2, tail)
 
-f : Cube2 -> Cube2
-f (corner1, corner2, corner3, corner4, corner5, corner6, tail) =
+f2 : Cube2 -> Cube2
+f2 (corner1, corner2, corner3, corner4, corner5, corner6, tail) =
   (corner2, corner6, corner3, corner4, corner1, corner5, tail)
 
 --r : Cube2 -> Cube2
