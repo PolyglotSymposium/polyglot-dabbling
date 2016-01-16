@@ -36,37 +36,36 @@ instance Show Lexeme where
   show (LiteralString x) = show x
 
 lexChars : Parser (List Lexeme)
---lexChars [] = Right ([], [])
---lexChars (x :: xs) = ?foo_1
+lexChars = ?todo
 
---andThen : Parser a -> Parser b -> Parser (a, b)
---andThen parser1 parser2 = doParse where
---  doParse text = do
---    (result1, rest1) <- parser1 text
---    (result2, rest2) <- parser2 rest1
---    return ((result1, result2), rest2)
---
---orElse : Parser a -> Parser a -> Parser a
---orElse parser1 parser2 = doParse where
---  doParse text =
---    let
---      result1 = parser1 text
---    in
---      if isRight result1 then result1 else parser2 text
---
---choice : Vect (S k) (Parser a) -> Parser a
---choice (x :: xs) = foldr orElse x xs
---
---char : Char -> Parser Char
---char c = char' where
---  char' : Parser Char
---  char' [] = Left UnexpectedEndOfString
---  char' (x :: xs) = if c == x
---     then Right (c, xs)
---     else Left $ Unrecognized x
---
---anyOf : Vect (S k) Char -> Parser Char
---anyOf = choice . map char
---
+andThen : Parser a -> Parser b -> Parser (a, b)
+andThen (MkParser parser1) (MkParser parser2) = MkParser doParse where
+  doParse text = do
+    (result1, rest1) <- parser1 text
+    (result2, rest2) <- parser2 rest1
+    return ((result1, result2), rest2)
+
+orElse : Parser a -> Parser a -> Parser a
+orElse (MkParser parser1) (MkParser parser2) = MkParser doParse where
+  doParse text =
+    let
+      result1 = parser1 text
+    in
+      if isRight result1 then result1 else parser2 text
+
+choice : Vect (S k) (Parser a) -> Parser a
+choice (x :: xs) = foldr orElse x xs
+
+char : Char -> Parser Char
+char c = MkParser char' where
+  char' : List Char -> ParseResult (Char, List Char)
+  char' [] = Left UnexpectedEndOfString
+  char' (x :: xs) = if c == x
+     then Right (c, xs)
+     else Left $ Unrecognized x
+
+anyOf : Vect (S k) Char -> Parser Char
+anyOf = choice . map char
+
 --lex : String -> List Lexeme
 --lex = ?asdf . lexChars . unpack
