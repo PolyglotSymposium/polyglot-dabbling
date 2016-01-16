@@ -68,11 +68,12 @@ threeAreAdjacent color1 color2 color3 =
   cubeDistance color1 color3 == Adjacent &&
   cubeDistance color2 color3 == Adjacent
 
-data SubcubeKind = Center | Edge | Corner
+data SubcubeKind = Inside | Middle | Edge | Corner
 
 data Subcube : SubcubeKind -> Type where
-  CenterCube : Color ->
-               Subcube Center
+  InsideCube : Subcube Inside
+  MiddleCube : Color ->
+               Subcube Middle
   EdgeCube : (c1 : Color) -> (c2 : Color) ->
              {auto prf : cubeDistance c1 c2 = Adjacent} ->
              Subcube Edge
@@ -80,12 +81,14 @@ data Subcube : SubcubeKind -> Type where
                {prf : threeAreAdjacent c1 c2 c3 = True} ->
                Subcube Corner
 
+data AnySubcube = UpcastSubcube (Subcube a)
+
 data Adjacency2 : SubcubeKind -> Type where
   CornerAdj2 : Subcube Corner -> Subcube Corner -> Subcube Corner -> Adjacency2 Corner
 
 data Adjacency3 : SubcubeKind -> Type where
-  CenterAdj3 : Subcube Edge -> Subcube Edge -> Subcube Edge -> Subcube Edge -> Adjacency3 Center
-  EdgeAdj3 : Subcube Center -> Subcube Center -> Subcube Edge -> Subcube Edge -> Adjacency3 Edge
+  MiddleAdj3 : Subcube Edge -> Subcube Edge -> Subcube Edge -> Subcube Edge -> Adjacency3 Middle
+  EdgeAdj3 : Subcube Middle -> Subcube Middle -> Subcube Edge -> Subcube Edge -> Adjacency3 Edge
   CornerAdj3 : Subcube Edge -> Subcube Edge -> Subcube Edge -> Adjacency3 Corner
 
 UnitOfRotation2 : Type
@@ -95,7 +98,7 @@ data FaceId = Up | Down | Left | Right | Front | Back
 
 %name FaceId faceId
 
---CenterId : Type
+--MiddleId : Type
 
 data EdgeId =
   UF
@@ -300,4 +303,10 @@ ui2 (corner1, corner2, corner3, corner4, tail) =
 --bi : Cube2 -> Cube2
 
 --ui_is_u_inverse : ui (u cube) = cube
+
+record Cube (n : Nat) where
+  constructor MkCube
+  corners : Vect 8 (Subcube Corner)
+  edges : Vect ((minus n 2)*12) (Subcube Edge)
+  middles : Vect ((minus n 2)*(minus n 2)*6) (Subcube Middle)
 
