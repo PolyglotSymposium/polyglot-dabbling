@@ -86,6 +86,10 @@ sequence (x :: xs) = lift2 (::) x $ sequence xs
 string : String -> Parser (List Char)
 string text = sequence $ map char $ unpack text
 
+ensureReduces : List a -> List a -> List a
+ensureReduces (x :: xs) ys = if length xs < length ys then xs else ys
+ensureReduces _ _ = []
+
 %assert_total
 parseZeroOrMore : (List Char -> ParseResult (a, List Char)) -> List Char -> (List a, List Char)
 parseZeroOrMore parser [] = ([], [])
@@ -94,19 +98,23 @@ parseZeroOrMore parser text =
     Left _ => ([], text)
     Right (firstValue, inputAfterFirstParse) =>
       let
-        toParse = textToParse text inputAfterFirstParse
+        toParse = ensureReduces text inputAfterFirstParse
         (subsequentValues, remainingInput) = parseZeroOrMore parser toParse
         values = firstValue::subsequentValues
       in
         (values, remainingInput)
-  where
-    textToParse : List Char -> List Char -> List Char
-    textToParse (x :: xs) ys = if length xs < length ys then xs else ys
-    textToParse _ _ = []
 
 many : Parser a -> Parser (List a)
-many (MkParser parser) = MkParser doParse where
-  doParse text = Right $ parseZeroOrMore parser text
+many (MkParser parser) = MkParser (Right . parseZeroOrMore parser)
+
+many1 : Parser a -> Parser (List a)
+many1 (MkParser parser) = MkParser doParse where
+  doParse text = do
+    (firstValue, inputAfterFirstParse) <- parser text
+    let toParse = ensureReduces text inputAfterFirstParse
+    let (subsequentValues, remainingInput) = parseZeroOrMore parser toParse
+    let values = firstValue::subsequentValues
+    pure (values, remainingInput)
 
 -- TODO: Delete me, for fun only
 threeDigits : Parser (List Char)
@@ -116,3 +124,6 @@ threeDigits =
     transformer = \((a, b), c) => [a, b, c]
   in
     map transformer parser
+
+parse : Parser a -> List Char -> ParseResult (a, List Char)
+parse (MkParser parser) text = parser text
