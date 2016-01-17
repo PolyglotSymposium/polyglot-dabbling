@@ -116,14 +116,22 @@ many1 (MkParser parser) = MkParser doParse where
     let values = firstValue::subsequentValues
     pure (values, remainingInput)
 
--- TODO: Delete me, for fun only
-threeDigits : Parser (List Char)
-threeDigits =
+opt : Parser a -> Parser (Maybe a)
+opt (MkParser parser) =
   let
-    parser = (digit `andThen` digit) `andThen` digit
-    transformer = \((a, b), c) => [a, b, c]
+    some = Just <$> MkParser parser
+    none = pure Nothing
   in
-    map transformer parser
+    some `orElse` none
+
+(<*) : Parser a -> Parser a -> Parser a
+(<*) p1 = map fst . andThen p1
+
+(*>) : Parser a -> Parser a -> Parser a
+(*>) p1 = map snd . andThen p1
+
+between : Parser a -> Parser a -> Parser a -> Parser a
+between p1 p2 p3 = p1 *> p2 <* p3
 
 parse : Parser a -> List Char -> ParseResult (a, List Char)
 parse (MkParser parser) text = parser text
