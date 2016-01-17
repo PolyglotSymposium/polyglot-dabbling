@@ -23,10 +23,26 @@ ParseResult = Either ParseError
 data Parser : Type -> Type where
   MkParser : (List Char -> ParseResult (a, List Char)) -> Parser a
 
+andThen : Parser a -> Parser b -> Parser (a, b)
+andThen (MkParser parser1) (MkParser parser2) = MkParser doParse where
+  doParse text = do
+    (result1, rest1) <- parser1 text
+    (result2, rest2) <- parser2 rest1
+    return ((result1, result2), rest2)
+
+%name Parser parser
+
 instance Functor Parser where
   map f (MkParser parse) = MkParser doParse where
     doParse text = map mapFirst $ parse text where
       mapFirst (x, y) = (f x, y)
+
+instance Applicative Parser where
+  pure x = MkParser $ Right . MkPair x
+  (<*>) fn parser = map (\(f, x) => f x) (fn `andThen` parser)
+
+lift2 : Parser (a -> b -> c) -> Parser a -> Parser b -> Parser c
+lift2 parser parser1 parser2 = parser <*> parser1 <*> parser2
 
 instance Show Lexeme where
   show LeftParenthesis = "("
@@ -37,13 +53,6 @@ instance Show Lexeme where
 
 lexChars : Parser (List Lexeme)
 lexChars = ?todo
-
-andThen : Parser a -> Parser b -> Parser (a, b)
-andThen (MkParser parser1) (MkParser parser2) = MkParser doParse where
-  doParse text = do
-    (result1, rest1) <- parser1 text
-    (result2, rest2) <- parser2 rest1
-    return ((result1, result2), rest2)
 
 orElse : Parser a -> Parser a -> Parser a
 orElse (MkParser parser1) (MkParser parser2) = MkParser doParse where
@@ -66,6 +75,18 @@ char c = MkParser char' where
 
 anyOf : Vect (S k) Char -> Parser Char
 anyOf = choice . map char
+
+digit : Parser Char
+digit = anyOf $ fromList ['0'..'9']
+
+-- TODO: Delete me, for fun only
+threeDigits : Parser (List Char)
+threeDigits =
+  let
+    parser = (digit `andThen` digit) `andThen` digit
+    transformer = \((a, b), c) => [a, b, c]
+  in
+    map transformer parser
 
 --lex : String -> List Lexeme
 --lex = ?asdf . lexChars . unpack
