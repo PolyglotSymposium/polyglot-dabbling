@@ -41,8 +41,8 @@ instance Applicative Parser where
   pure x = MkParser $ Right . MkPair x
   (<*>) fn parser = map (\(f, x) => f x) (fn `andThen` parser)
 
-lift2 : Parser (a -> b -> c) -> Parser a -> Parser b -> Parser c
-lift2 parser parser1 parser2 = parser <*> parser1 <*> parser2
+lift2 : (a -> b -> c) -> Parser a -> Parser b -> Parser c
+lift2 fn2 parser1 parser2 = (pure fn2) <*> parser1 <*> parser2
 
 instance Show Lexeme where
   show LeftParenthesis = "("
@@ -79,6 +79,25 @@ anyOf = choice . map char
 digit : Parser Char
 digit = anyOf $ fromList ['0'..'9']
 
+sequence : List (Parser a) -> Parser (List a)
+sequence [] = pure []
+sequence (x :: xs) = lift2 (::) x $ sequence xs
+
+string : String -> Parser (List Char)
+string text = sequence $ map char $ unpack text
+
+many : Parser a -> Parser (List a)
+many parser = ?hmmm where
+  parseZeroOrMore (MkParser parser) text =
+    case parser text of
+      Left _ => (List.Nil, text)
+      Right (firstValue, inputAfterFirstParse) =>
+        let
+          (subsequentValues, remainingInput) = parseZeroOrMore parser inputAfterFirstParse
+          values = firstValue::subsequentValues
+        in
+          (values, remainingInput)
+
 -- TODO: Delete me, for fun only
 threeDigits : Parser (List Char)
 threeDigits =
@@ -87,6 +106,3 @@ threeDigits =
     transformer = \((a, b), c) => [a, b, c]
   in
     map transformer parser
-
---lex : String -> List Lexeme
---lex = ?asdf . lexChars . unpack
