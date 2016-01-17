@@ -86,22 +86,24 @@ sequence (x :: xs) = lift2 (::) x $ sequence xs
 string : String -> Parser (List Char)
 string text = sequence $ map char $ unpack text
 
-parse : Parser a -> List Char -> ParseResult (a, List Char)
-parse (MkParser f) xs = f xs
-
-partial
+%assert_total
 parseZeroOrMore : (List Char -> ParseResult (a, List Char)) -> List Char -> (List a, List Char)
+parseZeroOrMore parser [] = ([], [])
 parseZeroOrMore parser text =
   case parser text of
-    Left _ => (List.Nil, text)
+    Left _ => ([], text)
     Right (firstValue, inputAfterFirstParse) =>
       let
-        (subsequentValues, remainingInput) = parseZeroOrMore parser inputAfterFirstParse
+        toParse = textToParse text inputAfterFirstParse
+        (subsequentValues, remainingInput) = parseZeroOrMore parser toParse
         values = firstValue::subsequentValues
       in
         (values, remainingInput)
+  where
+    textToParse : List Char -> List Char -> List Char
+    textToParse (x :: xs) ys = if length xs < length ys then xs else ys
+    textToParse _ _ = []
 
-partial
 many : Parser a -> Parser (List a)
 many (MkParser parser) = MkParser doParse where
   doParse text = Right $ parseZeroOrMore parser text
