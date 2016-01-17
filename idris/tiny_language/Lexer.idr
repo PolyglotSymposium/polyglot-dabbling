@@ -86,17 +86,25 @@ sequence (x :: xs) = lift2 (::) x $ sequence xs
 string : String -> Parser (List Char)
 string text = sequence $ map char $ unpack text
 
+parse : Parser a -> List Char -> ParseResult (a, List Char)
+parse (MkParser f) xs = f xs
+
+partial
+parseZeroOrMore : (List Char -> ParseResult (a, List Char)) -> List Char -> (List a, List Char)
+parseZeroOrMore parser text =
+  case parser text of
+    Left _ => (List.Nil, text)
+    Right (firstValue, inputAfterFirstParse) =>
+      let
+        (subsequentValues, remainingInput) = parseZeroOrMore parser inputAfterFirstParse
+        values = firstValue::subsequentValues
+      in
+        (values, remainingInput)
+
+partial
 many : Parser a -> Parser (List a)
-many parser = ?hmmm where
-  parseZeroOrMore (MkParser parser) text =
-    case parser text of
-      Left _ => (List.Nil, text)
-      Right (firstValue, inputAfterFirstParse) =>
-        let
-          (subsequentValues, remainingInput) = parseZeroOrMore parser inputAfterFirstParse
-          values = firstValue::subsequentValues
-        in
-          (values, remainingInput)
+many (MkParser parser) = MkParser doParse where
+  doParse text = Right $ parseZeroOrMore parser text
 
 -- TODO: Delete me, for fun only
 threeDigits : Parser (List Char)
