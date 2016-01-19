@@ -77,7 +77,7 @@ anyOf : Vect (S k) Char -> Parser Char
 anyOf = choice . map char
 
 digit : Parser Char
-digit = anyOf $ fromList ['0'..'9']
+digit = anyOf ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 sequence : List (Parser a) -> Parser (List a)
 sequence [] = pure []
@@ -90,23 +90,23 @@ ensureReduces : List a -> List a -> List a
 ensureReduces (x :: xs) ys = if length xs < length ys then xs else ys
 ensureReduces _ _ = []
 
-%assert_total
+partial
 parseZeroOrMore : (List Char -> ParseResult (a, List Char)) -> List Char -> (List a, List Char)
 parseZeroOrMore parser [] = ([], [])
 parseZeroOrMore parser text =
   case parser text of
     Left _ => ([], text)
     Right (firstValue, inputAfterFirstParse) =>
-      let
-        toParse = ensureReduces text inputAfterFirstParse
-        (subsequentValues, remainingInput) = parseZeroOrMore parser toParse
-        values = firstValue::subsequentValues
-      in
-        (values, remainingInput)
+      let toParse = ensureReduces text inputAfterFirstParse
+          (subsequentValues, remainingInput) = parseZeroOrMore parser toParse
+          values = firstValue::subsequentValues
+      in (values, remainingInput)
 
+partial
 many : Parser a -> Parser (List a)
 many (MkParser parser) = MkParser (Right . parseZeroOrMore parser)
 
+partial
 many1 : Parser a -> Parser (List a)
 many1 (MkParser parser) = MkParser doParse where
   doParse text = do
