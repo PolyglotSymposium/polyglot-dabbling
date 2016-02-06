@@ -32,19 +32,19 @@ andThen (MkParser parser1) (MkParser parser2) = MkParser doParse where
 
 %name Parser parser
 
-instance Functor Parser where
+Functor Parser where
   map f (MkParser parse) = MkParser doParse where
     doParse text = map mapFirst $ parse text where
       mapFirst (x, y) = (f x, y)
 
-instance Applicative Parser where
+Applicative Parser where
   pure x = MkParser $ Right . MkPair x
   (<*>) fn parser = map (\(f, x) => f x) (fn `andThen` parser)
 
 lift2 : (a -> b -> c) -> Parser a -> Parser b -> Parser c
 lift2 fn2 parser1 parser2 = (pure fn2) <*> parser1 <*> parser2
 
-instance Show Lexeme where
+Show Lexeme where
   show LeftParenthesis = "("
   show RightParenthesis = ")"
   show (Id x) = x
