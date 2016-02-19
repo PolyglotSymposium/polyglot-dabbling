@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "smfis", "smfis\smfis.fsproj", "{7D82EA07-7220-4F75-A8A0-F17EB623FCE1}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "smfis.tests", "smfis.tests\smfis.tests.fsproj", "{E1484EE4-A9FD-49B9-BD38-8CA6AC6CE94A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{7D82EA07-7220-4F75-A8A0-F17EB623FCE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D82EA07-7220-4F75-A8A0-F17EB623FCE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D82EA07-7220-4F75-A8A0-F17EB623FCE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1484EE4-A9FD-49B9-BD38-8CA6AC6CE94A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1484EE4-A9FD-49B9-BD38-8CA6AC6CE94A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1484EE4-A9FD-49B9-BD38-8CA6AC6CE94A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1484EE4-A9FD-49B9-BD38-8CA6AC6CE94A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
