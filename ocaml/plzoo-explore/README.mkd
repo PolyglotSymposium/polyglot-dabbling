@@ -2,7 +2,7 @@
 
 For the purpose of trying out the various [Plzoo languages](http://andrej.com/plzoo/).
 
-## Install instructions (not yet verified)
+## Install instructions
 Get OCaml (Linux Mint)
 ```bash
 sudo apt-get install ocaml
