@@ -1,3 +1,6 @@
+# Fake
+.fake
+
 # Idris bytecode
 *.ibc
 
